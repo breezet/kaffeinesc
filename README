@@ -1,0 +1,162 @@
+This is a softcam for Kaffeine.
+It requires Kaffeine version >= 0.8.2
+
+
+
+
+
+************************************************************************************************************************************
+-------------------------------------------
+IMPORTANT !!
+Before compiling, edit FFdecsa/Makefile for your arch (defaults to athlon-xp)
+-------------------------------------------
+-------------------------------------------
+Kaffeine-sc supports "delayed descrambling".
+See the file kaffeine-sc-finetune
+-------------------------------------------
+-------------------------------------------
+To use gbox filter see gbox-share-info
+-------------------------------------------
+************************************************************************************************************************************
+
+
+
+
+
+*************************************************************************************************************************************
+You need a SoftCam.Key (case sensitive!!) in $HOME/.kaffeine/, format is as follow:
+
+;
+; comment
+;
+; Viaccess
+V XXXXXX YY <16 or 32 hex characters>
+; Seca
+S XXXXXX YY <16 hex characters>
+; Irdeto
+I XX YY <16 hex characters>
+;
+; where
+; XXXX = provider (hex)
+; YY = key number (hex)
+;
+;
+; Constant CW
+X AAAA BBBB CCCC <32 hex characters>
+;
+; where
+; AAAA = CA system id (hex)
+; BBBB = transpont stream ID (decimal)
+; CCCC = service ID (decimal)
+;
+;
+Nagra1
+N XXX YY <16 hex characters>
+E1 XXX <128 hex characters>
+N1 XXX <128 hex characters>
+N2 XXX <128 hex characters>
+;
+; where
+; XXX = provider (hex)
+; YY = key number (hex)
+;
+;
+; Nagra2
+N XXX YY  <32 hex characters>  ; IDEA opkey (00/01)
+M1 XXX <128 hex characters>   ; RSA key
+;
+N XXXX NN ZZ <32/48/192 characters> ; EMM keys (literal 'NN'), some examples:
+N XXXX NN 02 <32/48 characters>     ; EMM-G IDEA key (former N XXXX 02)
+N XXXX NN 12 <192 characters>       ; EMM-G RSA key  (former N XXXX N2)
+N XXXX NN 52 <192 characters>	      ; D+ EMM RSA2 (former N XXXX M2)
+;
+; where
+; XXXX = provider (hex)
+; YY = key number (hex)
+; ZZ = EEPROM key number
+;
+;
+; SPECIAL CASE:
+; when a provid uses in fact keys from another provid, you can set the "USE" keyword, e.g.
+N 0503 USE 0501
+;
+;
+; Cryptoworks
+; W XXXX YY ZZ VV <32 hex characters> ; opkey
+; W XXXX YY ZZ VV <128 hex characters> ; RSA key (normaly ZZ=10)
+; W XXXX YY CC <12 hex characters> ; cardkey (literal 'CC')
+;
+; where
+; XXXX - caid
+; YY - provider ident
+; ZZ - keytype (20/31/10 derived from cardfiles EF20/EF31/EF10)
+; VV - keyid (00/01)
+;
+;
+************************************************************************************************************************************
+
+
+
+
+
+*************************************************************************************************************************************
+Auto Update:
+
+- for irdeto1 AU, you need a "Ird-Beta.KID" file in $HOME/.kaffeine
+- for viaccess AU, you need a "Viaccess.KID" file in $HOME/.kaffeine
+- for nagra2 AU, you need relevant keys in SoftCam.Key
+
+*************************************************************************************************************************************
+
+
+
+
+
+
+*************************************************************************************************************************************
+Additionnal settings are available in menu->DVB->dvb settings->dvb plugins->Softcam
+
+*************************************************************************************************************************************
+
+
+
+
+
+
+************************************************************************************************************************************
+Note about TPS Aes:
+----------------------------
+To use the TPS AutoUpdate feature, tune to 10873MHz (FRANCE 5 / FRANCE 4) and wait some seconds (until the channel is decrypted). Do it each day.
+************************************************************************************************************************************
+
+
+
+
+
+
+*************************************************************************************************************************************
+TroubleShooting:
+
+Q: I get compile error: "kaffeine/kaffeinedvbplugin.h: No such file or directory".
+A: You need kaffeine-devel files. Either install kaffeine devel package or compile and install
+     Kaffeine sources.
+
+Q: I get compile error: "'get_unaligned' was not declared in this scope".
+A: You have to install kernel headers. If compiler still complains, do the following:
+	1)  mv   /usr/include/asm   /usr/include/asm.org
+	2)  ln -s /usr/src/linux/include/asm   /usr/include/asm
+
+Q: my softcam.key works in window$ but kaffeine complains about missing keys, why?
+A: kaffeine-sc SofCam.Key (case sensitive!!) format is different than window$ one.
+    The format is explained in this file, read it carrefully.
+
+Q: I don't understand how to convert my window$ softcam.key to have it working with kaffeine-sc.
+A: Search here and there, ask friends, forums, etc.. in order to understand what you are doing.
+    Yes, this requires some efforts, but :
+    	1) That's the price to pay to view encrypted channels.
+    	2) That's freedom.
+    	3) You will end with some new knowledges.
+    	4) That's freedom.
+    	5) That's Linux philosophy.
+    	6) That's freedom.
+************************************************************************************************************************************

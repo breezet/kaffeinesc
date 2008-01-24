@@ -1,0 +1,102 @@
+0.3.7
+- added Viaccess AU
+- introduce a special case softcam.key syntax, e.g.  N 0503 USE 0501
+- TPS fix
+
+0.3.6
+- TPS fix
+- Providers 3101, 0503 & 0511 (all Nagra2 on 19,2) use N2 MECM
+
+0.3.5
+- Providers 1101 & 1102 (Nagra2 on 23,5) use N2 MECM
+- Polsat AU fix
+
+0.3.4
+- Premiere MECM (patch by Pero_Peric)
+- fixed tpsau when 10873 is uncrypted
+
+0.3.3
+- fixes, cleanups
+- speed up tps decrypting
+
+0.3.2
+- "fixed" tps AU
+
+0.3.1
+- added D+ AU (patch by Body)
+- various AU fixes
+
+0.3.beta2
+- added Premiere AU (nagra2)
+
+0.3.beta1
+- added Irdeto-Betacrypt AU
+- added Auto Update capability
+- fixed TPS AU
+- fixed ABSAT aes
+
+0.2.6
+- fixed irdeto emu
+- fixed TPS AU
+
+0.2.5
+- fixed TPS AU (thanx to Vahid)
+
+0.2.4
+- added TPS V3 (patch by Body)
+- config files should now be in $HOME/.kaffeine/
+- added TPS auto update (thanx to k2k2000 and Vahid)
+- gbox fixes
+
+0.2.3
+- added irdeto chid support
+
+0.2.2
+- added gbox filter file (see gbox-share-info)
+- Cryptoworks fix
+
+0.2.1
+- fix SoftCam.Key comments parsing
+- increased gbox read-write timeout
+- added Cryptoworks emu (patch by Body)
+- fix gbox NULL cw.
+
+0.2
+- added delayed descrambling
+
+0.1.9
+- added NDS CA desc.
+- fix for NDS with gbox (from morfsta vdr patch)
+
+0.1.8
+- added gbox indirect mode client
+
+0.1.7
+- added nagra1
+- fixed shared pmt pid.
+- included idea and aes.
+- ecm cache fixes
+- hack for inverse cw in nagra2
+- added NewCS provID
+- NewCS settings: no more restart needed
+
+0.1.6
+- NewCs fixes.
+- added Conax (cardsharing only)
+- added Cryptoworks (cardsharing only)
+- added NewCS ecm cache.
+
+0.1.5
+- added Nagra2.
+
+0.1.4
+- Constant CW added
+
+0.1.3
+-FF card support
+
+0.1.2
+-Minor fixes
+
+0.1.1
+-Added NewCS client.

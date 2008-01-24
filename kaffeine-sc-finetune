@@ -1,0 +1,29 @@
+# With some short parity delay systems (like NDS), it could happen
+# that the cw arrives too late (e.g. with cardsharing) and you get some
+# glitches.
+#
+# In this file you can tell kaffeine-sc to buffer TS data before descrambling.
+# Off course, this will delay the playing of the channel.
+#
+# Copy this file in $HOME/.kaffeine/
+#
+# Format:
+# Transport_Stream_ID  Service_ID  N
+#
+# the buffer will be N*64*188 bytes
+# so, for a 3000kbs channel, N=32 will give ~1 sec buffer
+#
+# N must be N<=256
+#
+# (In case xine audio/video sync goes crazy, enter timeshift mode
+# and wait 10-15 secs.)
+#
+# You don't have to restart kaffeine after changes, just rezap.
+#
+#6600 11101 80
+#6600 11105 80
+#6600 11103 80
+#6600 11115 80
+#5700 11309 64
+#5700 11303 64
+#5700 11311 64

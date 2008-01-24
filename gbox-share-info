@@ -1,0 +1,8 @@
+# With this file, you can filter which CAID/PROVID pair are sent to gbox
+# Format is CAIDPROVID as found in /var/tmp/share.info
+# Copy this file in $HOME/.kaffeine/
+# To not use this feature remove this file from $HOME/.kaffeine/
+#
+# 05021100
+# 01000081
+# 18014101
