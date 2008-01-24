@@ -21,7 +21,7 @@
 #include "kaffeinesc.h"
 #include "kaffeinesc.moc"
 
-#define SCVERSION "0.3.7"
+#define SCVERSION "0.3.8-SVN"
 
 
 
