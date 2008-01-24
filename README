@@ -50,7 +50,14 @@ X AAAA BBBB CCCC <32 hex characters>
 ; CCCC = service ID (decimal)
 ;
 ;
-Nagra1
+; BISS
+B AAAA BBBB CCCC <16 hex characters>
+;
+; where
+; AAAA = transpont stream ID (decimal)
+; BBBB = service ID (decimal)
+;
+; Nagra1
 N XXX YY <16 hex characters>
 E1 XXX <128 hex characters>
 N1 XXX <128 hex characters>
@@ -93,6 +100,7 @@ N 0503 USE 0501
 ; VV - keyid (00/01)
 ;
 ;
+Note: TSID, SID can be checked out in Channels menu, selecting channel and then Channel Editor.
 ************************************************************************************************************************************
 
 
