@@ -216,11 +216,14 @@ void DVBscam::caDesc( unsigned char *buf )
 			case NDS_CA_SYSTEM:
 				name = "NDS/Videguard";
 				break;
+			case BISS_CA_SYSTEM:
+				name = "BISS";
+				break;
 			default:
 				name = "ConstantCW";
 				break;
 		}
-		if ( name=="ConstantCW" )
+		if ( (name=="ConstantCW") || (name=="BISS") )
 			pid = -1;
 		else
 			pid = ((buf[2] & 0x1f) << 8) | buf[3];
@@ -686,7 +689,10 @@ bool DVBscam::process( CardClient *cc, Ecm *e, int evod )
 	int id=e->id;
 
 	if ( !e->pid ) {
-		return ConstantCW( e, programNumber );
+		if(e->system==0x2600)
+			return ConstantCW( e, programNumber, 1 );
+		else
+			return ConstantCW( e, programNumber, 0 );
 	}
 
 	if ( (e->system&0xFFFFFF00)==IRDETO_CA_SYSTEM && cc ) {
@@ -964,24 +970,41 @@ bool DVBscam::Cryptoworks( unsigned char *data, int caid )
 
 
 
-bool DVBscam::ConstantCW( Ecm *e, int sid )
+bool DVBscam::ConstantCW( Ecm *e, int sid, int biss )
 {
  	int i;
  	unsigned char *p;
  	Skey *k=0;
 
- 	for ( i=0; i<(int)keys.count(); i++ ) {
- 		k = keys.at(i);
- 		if ( (k->type=='X' || k->type=='x') && k->tsid==tsID && k->id==e->system && k->keynr==sid )
- 			break;
- 		else
- 			k = 0;
+	if (biss) {
+		for ( i=0; i<(int)keys.count(); i++ ) {
+			k = keys.at(i);
+			if ( (k->type=='B' || k->type=='b') && k->tsid==tsID /* && k->id==e->system */ && k->keynr==sid )
+				break;
+			else
+				k = 0;
+		}
+		if ( !k ) {
+			fprintf(stderr,"No BISS Key found for sid %d\n", sid );
+			return false;
+		}
+		fprintf(stderr, "Using BISS key for sid %d\n", sid );
+        }
+	else {
+		for ( i=0; i<(int)keys.count(); i++ ) {
+			k = keys.at(i);
+			if ( (k->type=='X' || k->type=='x') && k->tsid==tsID && k->id==e->system && k->keynr==sid )
+				break;
+			else
+				k = 0;
+		}
+		if ( !k ) {
+			fprintf(stderr,"No Constant CW found for system %x sid %d\n", e->system, sid );
+			return false;
+		}
+		fprintf(stderr, "Using Constant CW system %x sid %d\n", e->system, sid );
 	}
-	if ( !k ) {
-		fprintf(stderr,"No Constant CW found for system %x sid %d\n", e->system, sid );
-		return false;
-	}
-	fprintf(stderr, "Using Constant CW system %x sid %d\n", e->system, sid );
+
 	p = (unsigned char *)&k->v2key;
 	for ( i=0; i<8; i++ )
 		CW[15-i] = p[i];
@@ -1631,6 +1654,10 @@ bool DVBscam::getKeys()
 			}
 			else if ( s.startsWith("X") ) {
 				if ( sscanf( s.latin1(), "%c %x %d %d %s", &type, &id, &tsid, &keynr, key) != 5 )
+					continue;
+			}
+			else if ( s.startsWith("B") ) {
+				if ( sscanf( s.latin1(), "%c %d %d %s", &type, &tsid, &keynr, key) != 4 )
 					continue;
 			}
 			else if ( s.startsWith("M1") ) {

@@ -7,17 +7,17 @@
 #include <qobject.h>
 #include <qthread.h>
 
-#define SECA_CA_SYSTEM      0x100
-#define VIACCESS_CA_SYSTEM  0x500
-#define IRDETO_CA_SYSTEM    0x600
-#define BETA_CA_SYSTEM     0x1700
-#define NAGRA_CA_SYSTEM    0x1800
-#define CRYPTOWORKS_CA_SYSTEM  0xD00
-#define DREAMCRYPT_CA_SYSTEM   0x4A70
-#define DREAMCRYPT_CA_SYSTEM_LAST   0x4A7F
-#define CONAX_CA_SYSTEM 0x0B00
-#define NDS_CA_SYSTEM 0x900
-
+#define SECA_CA_SYSTEM      		0x100
+#define VIACCESS_CA_SYSTEM  		0x500
+#define IRDETO_CA_SYSTEM    		0x600
+#define BETA_CA_SYSTEM     		0x1700
+#define NAGRA_CA_SYSTEM    		0x1800
+#define CRYPTOWORKS_CA_SYSTEM  		0xD00
+#define DREAMCRYPT_CA_SYSTEM   	    	0x4A70
+#define DREAMCRYPT_CA_SYSTEM_LAST   	0x4A7F
+#define CONAX_CA_SYSTEM 		0x0B00
+#define NDS_CA_SYSTEM 			0x900
+#define BISS_CA_SYSTEM 			0x2600
 
 
 class DVBsection : public QObject, public QThread

@@ -86,7 +86,7 @@ protected:
 	bool Viaccess( unsigned char *source, int length, int id );
 	bool Seca( unsigned char *source, int length, int id, int keynr );
 	bool Irdeto( unsigned char *source, int length, int id );
-	bool ConstantCW( Ecm *e, int sid );
+	bool ConstantCW( Ecm *e, int sid, int biss );
 	bool Nagra2( unsigned char *source );
 	bool Nagra1( unsigned char *data );
 	bool Cryptoworks( unsigned char *source, int caid );
