@@ -763,8 +763,10 @@ again:
 		case NAGRA_CA_SYSTEM:
 			if(e->system==0x1801)
 				return Nagra2( &sbuf[0] );
-			else
+			else if(e->system==0x1800)
 				return Nagra1( &sbuf[0] );
+			else // each provider use is own id
+                                return Nagra3( );
 		case CRYPTOWORKS_CA_SYSTEM:
 			return Cryptoworks(&sbuf[0], e->system);
 	}
@@ -1240,6 +1242,13 @@ bool DVBscam::Nagra2(unsigned char *data)
 	return true;
 }
 
+
+bool DVBscam::Nagra3()
+{
+		fprintf( stderr, "Nagra3 found (not implemented yet) only for card server\n");
+	return false;	
+
+}
 
 
 bool DVBscam::Irdeto( unsigned char *source, int length, int id )
