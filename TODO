@@ -1,4 +1,6 @@
 KaffeineSC TODO LIST:
 
 
- 
+ADD Constant word too all providers
+
+ie: try they encryption system 1st if doesnt work and CW key found try it too (lots of channels use CW's somethimes)
