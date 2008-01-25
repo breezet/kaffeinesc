@@ -1,3 +1,8 @@
+0.3.8
+- Provider 0505 (Nagra2 on 19,2) use N2 MECM
+- added "BISS" as ConstantCW 
+- TPS fix
+
 0.3.7
 - added Viaccess AU
 - introduce a special case softcam.key syntax, e.g.  N 0503 USE 0501
