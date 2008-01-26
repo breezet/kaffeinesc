@@ -1,7 +1,5 @@
 0.3.8
-- Provider 0505 (Nagra2 on 19,2) use N2 MECM
 - added "BISS" as ConstantCW 
-- TPS fix
 - Added new CA systems
 - Added Nagra3 function (not working yet) working with cardserver only
 
