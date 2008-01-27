@@ -2,6 +2,7 @@
 - added "BISS" as ConstantCW 
 - Added new CA systems
 - Added Nagra3 function (not working yet) working with cardserver only
+- PowerVU CA system is now found 
 
 0.3.7
 - added Viaccess AU
