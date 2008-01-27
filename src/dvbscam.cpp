@@ -216,6 +216,9 @@ void DVBscam::caDesc( unsigned char *buf )
 			case NDS_CA_SYSTEM:
 				name = "NDS/Videguard";
 				break;
+			case POWERVU_CA_SYSTEM:
+				name = "PowerVU";
+				break;
 			case BISS_CA_SYSTEM:
 				name = "BISS";
 				break;
