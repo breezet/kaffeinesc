@@ -3,6 +3,7 @@
 - Added new CA systems
 - Added Nagra3 function (not working yet) working with cardserver only
 - PowerVU CA system is now found 
+- TPS fix 04-02-2008
 
 0.3.7
 - added Viaccess AU
