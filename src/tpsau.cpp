@@ -134,7 +134,7 @@ bool cOpenTVModule::ParseSections(void)
         break;
       case CODE_SECTION_HDR:
 	code.magic=hdr;
-	code.size=UINT32_BE(mem+idx+4)-8;
+	code.size=s_len-8;
 	code.m_id=UINT32_BE(mem+idx+8);
 	code.entry_point=UINT16_BE(mem+idx+12);
 	code.end=UINT16_BE(mem+idx+14);
@@ -143,13 +143,21 @@ bool cOpenTVModule::ParseSections(void)
         break;
       case DATA_SECTION_HDR:
 	data.magic=hdr;
-	data.dlen=UINT32_BE(mem+idx+4)-8;
+	data.dlen=s_len-8;
 	data.data=mem+idx+8;
         sections|=4;
+        break;
+      case SWAP_SECTION_HDR:
+      case GDBO_SECTION_HDR:
         break;
       case LAST_SECTION_HDR:
       case 0:
         idx=modlen;
+        break;
+      case COMP_SECTION_HDR:
+        fprintf(stderr,"TpsAu : OpenTV module still compressed in ParseSections()");
+        return 0;
+      default:
         break;
       }
     idx+=s_len;
@@ -401,13 +409,15 @@ bool TpsAu::processAU( const cOpenTVModule *mod )
     if(c[i] == 0x81) { // PushEA DS:$xxxx
       unsigned int addr=(c[i+1]<<8)|c[i+2];
       if(addr<(datahdr->dlen-3)) {
-        if(d[addr+1]==0x00 && d[addr+3]==0x00 && d[addr+4]==3) kd=addr;
+        if(d[addr+1]==0x00 && d[addr+3]==0x00 && (d[addr+4]==3|d[addr+4]==2)) kd=addr;
         else if(d[addr]==0x73 && d[addr+1]==0x25) {
           static const unsigned char scan1[] = { 0x28, 0x20, 0x20, 0xC0 };
           for(int j=2; j < 0xC; j++)
             if(!memcmp(&d[addr+j],scan1,sizeof(scan1))) { cb1=addr; break; }
           }
-        else if((d[addr]&0xF0)==0x60 && (d[addr+1]&0xF0)==0xB0) {
+        else if(cb1 && !cb2) cb2=addr;
+        else if(cb1 && cb2 && !cb3) cb3=addr;
+        /*else if((d[addr]&0xF0)==0x60 && (d[addr+1]&0xF0)==0xB0) {
           int vajw = (int)(((~(d[addr]&0x0F))<<4)|(d[addr+1]&0x0F));
           unsigned char hits=0;
           for(int j=2; j < 0x30; j++) {
@@ -420,7 +430,7 @@ bool TpsAu::processAU( const cOpenTVModule *mod )
           if(hits==3) cb3=addr;
           else if(cb2 == 0 && hits==2) cb2=addr;
           else if(hits==2) cb3=addr;
-          }
+          }*/
         }
       }
     }
@@ -428,7 +438,7 @@ bool TpsAu::processAU( const cOpenTVModule *mod )
     fprintf(stderr,"TpsAu : couldn't locate all pointers in data section\n");
     return false;
     }
-  RegisterAlgo3(d,cb1,cb2,cb3,kd);
+  RegisterAlgo3(d,cb1,cb2,cb3,datahdr->dlen);
 
   const unsigned char *data=&d[kd];
   int seclen, numkeys;
@@ -454,17 +464,25 @@ bool TpsAu::processAU( const cOpenTVModule *mod )
     fprintf(stderr,"TpsAu : section 6 exceeds buffer\n");
     return false;
     }
-  for(int i=0; i<keylen; i+=16) TpsDecrypt(&sec[6][i],algo,key);
+  unsigned char tmpkey[16];
+  memcpy( tmpkey, key, 16 );
+  for(int i=0; i<keylen; i+=16) {
+  	memcpy( key, tmpkey, 16 );
+  	for (int j=0; j<16; ++j )
+  	  fprintf( stderr, "%02x ", key[j] );
+  	fprintf( stderr, "\n " );
+  	TpsDecrypt(&sec[6][i],algo,key);
+  }
 
   for(int i=0; i<seclen; i++) {
     static const unsigned char startkey[] = { 0x01,0x01 };
     static const unsigned char startaes[] = { 0x09,0x10 };
     static const unsigned char startse[] = { 0x0a,0x10 };
     unsigned char tmp[56];
-    tmp[3]=sec[0][i];
-    tmp[2]=sec[1][i];
-    tmp[1]=sec[2][i];
-    tmp[0]=sec[3][i];
+    tmp[0]=sec[0][i];
+    tmp[1]=sec[1][i];
+    tmp[2]=sec[2][i];
+    tmp[3]=sec[3][i];
     if(CheckFF(tmp,4)) continue;
     int keyid=sec[4][i];
     int keylen=sec[5][keyid];
