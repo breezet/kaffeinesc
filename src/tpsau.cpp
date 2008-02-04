@@ -468,9 +468,6 @@ bool TpsAu::processAU( const cOpenTVModule *mod )
   memcpy( tmpkey, key, 16 );
   for(int i=0; i<keylen; i+=16) {
   	memcpy( key, tmpkey, 16 );
-  	for (int j=0; j<16; ++j )
-  	  fprintf( stderr, "%02x ", key[j] );
-  	fprintf( stderr, "\n " );
   	TpsDecrypt(&sec[6][i],algo,key);
   }
 
