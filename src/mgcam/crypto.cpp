@@ -21,7 +21,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <byteswap.h>
-#include <asm/unaligned.h>
+// #include <asm/unaligned.h>
+// ASM related
+#define get_unaligned(ptr) (*(ptr))
+#define put_unaligned(val, ptr) ((void)( *(ptr) = (val) ))
 
 #include "crypto.h"
 #include "misc.h"

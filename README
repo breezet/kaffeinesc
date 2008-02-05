@@ -17,6 +17,11 @@ See the file kaffeine-sc-finetune
 -------------------------------------------
 To use gbox filter see gbox-share-info
 -------------------------------------------
+-------------------------------------------
+unaligned.h defines are now on crypto.cpp and cryptoworks.cpp
+if they dont work for you comment them and uncoment the asm/unligned.h include
+refer to troubleshooting if problem presists
+-------------------------------------------
 ************************************************************************************************************************************
 
 
@@ -29,7 +34,7 @@ You need a SoftCam.Key (case sensitive!!) in $HOME/.kaffeine/, format is as foll
 ;
 ; comment
 ;
-; Viaccess
+; ViaccessTroubleShooting
 V XXXXXX YY <16 or 32 hex characters>
 ; Seca
 S XXXXXX YY <16 hex characters>
