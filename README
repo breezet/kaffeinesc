@@ -34,7 +34,7 @@ You need a SoftCam.Key (case sensitive!!) in $HOME/.kaffeine/, format is as foll
 ;
 ; comment
 ;
-; ViaccessTroubleShooting
+; Viaccess
 V XXXXXX YY <16 or 32 hex characters>
 ; Seca
 S XXXXXX YY <16 hex characters>

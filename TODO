@@ -1,15 +1,12 @@
 KaffeineSC TODO LIST:
 
 
-- ADD Constant word too all providers 
-  ie: try they encryption system 1st if doesnt work and CW key found (in softcam.key) try it too (lots of channels use CW's somethimes)
-
 - Add Nagra1 Autoroll
 
 - Code clean ups
 
 - Remove D+ AU Nagra2 no longer on this provider... added in 0.3.1
 
-- Enable disable checkbox at the end of the newcamd entrys
+- Enable disable checkbox at the end of the newcamd/newcs entrys
 
-- Conax, SHL (neotioncrypt (uses CW for sound and another key for video)) both on vdr
+- Conax (? usefull ? there are no keys... ), SHLCrypt

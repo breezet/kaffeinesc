@@ -1,10 +1,11 @@
 0.3.8
 - added "BISS" as ConstantCW 
 - Added new CA systems
-- Added Nagra3 function (not working yet) working with cardserver only
+- Added Nagra3 function (not working yet) working with cardserver/newcamd only
 - PowerVU CA system is now found 
 - TPS fix 04-02-2008
-- Added ASM headers directly
+- Added unaligned.h defines directly (refer to README)
+- Added CW system to all channels (refer to README)
 
 0.3.7
 - added Viaccess AU

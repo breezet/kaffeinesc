@@ -774,7 +774,11 @@ again:
 			return Cryptoworks(&sbuf[0], e->system);
 	}
 
-	return false;
+       // Adding CW to all channels
+        if ( e->pid ) // should not try CW again if system was allready CW
+	    return ConstantCW( e, programNumber, 0 );
+
+//	return false;
 }
 
 
