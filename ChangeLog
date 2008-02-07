@@ -5,7 +5,7 @@
 - PowerVU CA system is now found 
 - TPS fix 04-02-2008
 - Added unaligned.h defines directly (refer to README)
-- Added CW system to all channels (refer to README)
+- Added CW system to all channels (refer to README to set keys)
 
 0.3.7
 - added Viaccess AU
