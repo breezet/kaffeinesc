@@ -56,7 +56,7 @@ X AAAA BBBB CCCC <32 hex characters>
 ;
 ;
 ; BISS
-B AAAA BBBB CCCC <16 hex characters>
+B AAAA BBBB <16 hex characters>
 ;
 ; where
 ; AAAA = transpont stream ID (decimal)
