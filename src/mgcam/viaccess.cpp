@@ -124,7 +124,7 @@ bool cTPS::DecryptAlgo3( unsigned char *data, const unsigned char *key )
     for(int i=0; i<16; i++) st20.WriteByte(RAMS+0x400+i,key[i]);
     st20.Init(FLASHS+cb2off,RAMS+0xF000);
     st20.SetCallFrame(0,RAMS+0x400,RAMS+0x800,0);
-    int err=st20.Decode(40000);
+    int err=st20.Decode(30000);
     if(err<0) {
       fprintf(stderr,"TPS : ST20 processing failed in callback2 (%d)\n",err);
       return false;
