@@ -21,7 +21,7 @@
 #include "kaffeinesc.h"
 #include "kaffeinesc.moc"
 
-#define SCVERSION "0.3.8-SVN"
+#define SCVERSION "0.3.9-svn"
 
 
 
@@ -46,22 +46,14 @@ ScListViewItem::ScListViewItem( CardClient *c, KListView *parent, QString host, 
 
 
 ScConfigDialog::ScConfigDialog( KaffeineSc *k, QWidget *parent, QPtrList<CardClient> *cc ) :
-	KDialogBase ( Plain, i18n("NewCS client settings"), Ok, Ok, parent, "scconfigdialog", true, true )
+	ScConfigDialogUI ( parent, "scconfigdialog", true )
 {
-	QVBoxLayout *vb;
-	QHBoxLayout *hb;
 	int i;
 	QString s;
 	CardClient *tc;
 
 	ksc = k;
 
-	vb = new QVBoxLayout( plainPage(), 6, 6 );
-	//QLabel *lab = new QLabel( i18n("<b>Restart needed to apply changes !!</b>"), plainPage() );
-	//vb->addWidget( lab );
-	gbox = new QCheckBox( i18n("Enable gbox client"), plainPage() );
-	vb->addWidget( gbox );
-	clientList = new KListView ( plainPage() );
 	clientList->setAllColumnsShowFocus( true );
 	clientList->addColumn( i18n("Hostname") );
 	clientList->addColumn( i18n("User name") );
@@ -78,16 +70,9 @@ ScConfigDialog::ScConfigDialog( KaffeineSc *k, QWidget *parent, QPtrList<CardCli
 	clientList->setRenameable( 4, true );
 	clientList->setRenameable( 5, true );
 	clientList->setRenameable( 6, true );
-	vb->addWidget( clientList );
 
-	hb = new QHBoxLayout( plainPage(), 6, 6 );
-	add = new QPushButton( i18n("New entry"), plainPage() );
 	connect( add, SIGNAL(clicked()), this, SLOT(addEntry()) );
-	hb->addWidget( add );
-	del = new QPushButton( i18n("Delete entry"), plainPage() );
 	connect( del, SIGNAL(clicked()), this, SLOT(deleteEntry()) );
-	hb->addWidget( del );
-	vb->addLayout( hb );
 
 	csList = cc;
 	for ( i=0; i<(int)cc->count(); i++ ) {

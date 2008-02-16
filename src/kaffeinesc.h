@@ -15,6 +15,7 @@
 #include "cardclient.h"
 #include "tpsau.h"
 #include "emm.h"
+#include "scconfigdialogui.h"
 
 
 
@@ -41,7 +42,7 @@ public:
 
 class KaffeineSc;
 
-class ScConfigDialog : public KDialogBase
+class ScConfigDialog : public ScConfigDialogUI
 {
 	Q_OBJECT
 
@@ -53,11 +54,8 @@ public:
 	void saveNewcsConf( QValueList<ConfigLine> list );
 
 private:
-	KListView *clientList;
-	QPushButton *add, *del;
 	QPtrList<CardClient> *csList;
 	KaffeineSc *ksc;
-	QCheckBox *gbox;
 
 protected slots:
 	void accept();
