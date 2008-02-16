@@ -14,7 +14,8 @@ noinst_HEADERS = kaffeinesc.h \
 	dvbsection.h \
 	emm.h
 
-libkaffeinedvbsc_la_SOURCES = kaffeinesc.cpp \
+libkaffeinedvbsc_la_SOURCES = scconfigdialogui.ui \
+	kaffeinesc.cpp \
 	cardclient.cpp \
 	dvbscam.cpp \
 	tpsau.cpp \
