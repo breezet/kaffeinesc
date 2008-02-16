@@ -1,7 +1,7 @@
 ##### compiling with g++ gives a little more speed
 # !!!!!!!!!!! be aware that gcc=>4 gives half speed than gcc=>3.3.3 on 32bit cpu !!!!!!!!!!!!
-#COMPILER=g++
-COMPILER=g++34
+COMPILER=g++
+#COMPILER=g++34
 
 # !!!!!!!!!!! Adapt the following flags to your cpu !!!!!!!!!!!!!!!!!!!!!!!!!!
 FLAGS=-O3 -fPIC -fexpensive-optimizations -funroll-loops -Wall -Winline -fomit-frame-pointer
