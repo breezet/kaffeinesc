@@ -52,6 +52,7 @@ public:
 
 	static QValueList<ConfigLine> getNewcsConf();
 	void saveNewcsConf( QValueList<ConfigLine> list );
+	void loadKeyFile();
 
 private:
 	QPtrList<CardClient> *csList;
@@ -61,6 +62,7 @@ protected slots:
 	void accept();
 	void addEntry();
 	void deleteEntry();
+ 	void saveKeysf();
 	void clientChanged( QListViewItem *it);
 	void gboxEnabled( bool b );
 

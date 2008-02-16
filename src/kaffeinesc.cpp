@@ -11,6 +11,7 @@
 #include <qpushbutton.h>
 #include <qlabel.h>
 #include <qregexp.h>
+#include <qtextedit.h>
 
 #include <klocale.h>
 #include <kaction.h>
@@ -73,7 +74,8 @@ ScConfigDialog::ScConfigDialog( KaffeineSc *k, QWidget *parent, QPtrList<CardCli
 
 	connect( add, SIGNAL(clicked()), this, SLOT(addEntry()) );
 	connect( del, SIGNAL(clicked()), this, SLOT(deleteEntry()) );
-
+	connect( saveKeys, SIGNAL(clicked()), this, SLOT(saveKeysf()) );
+	
 	csList = cc;
 	for ( i=0; i<(int)cc->count(); i++ ) {
 		tc = cc->at(i);
@@ -86,6 +88,9 @@ ScConfigDialog::ScConfigDialog( KaffeineSc *k, QWidget *parent, QPtrList<CardCli
 
 	connect( clientList, SIGNAL(itemRenamed(QListViewItem*)), this, SLOT(clientChanged(QListViewItem*)) );
 	connect( gbox, SIGNAL(toggled(bool)), this, SLOT(gboxEnabled(bool)) );
+
+        loadKeyFile();
+
 }
 
 
@@ -250,6 +255,39 @@ QValueList<ConfigLine> ScConfigDialog::getNewcsConf()
 	return list;
 }
 
+void ScConfigDialog::loadKeyFile()
+{
+	QString s;
+	
+	s = QDir::homeDirPath()+"/.kaffeine/SoftCam.Key";
+	QFile f( s );
+	if ( !f.open(IO_ReadOnly) ) {
+		fprintf( stderr, "Can't open %s !!!\n", s.ascii() );
+		return;
+	}
+	QTextStream t( &f );
+
+	while ( !t.eof() ) {
+		s = t.readLine();
+		textEditKeys->append(s);
+                 }
+	f.close();
+}
+
+void ScConfigDialog::saveKeysf()
+{
+	QString s;
+	
+	s = QDir::homeDirPath()+"/.kaffeine/SoftCam.Key";
+	QFile f( s );
+	if ( !f.open(IO_WriteOnly) ) {
+		fprintf( stderr, "Can't open %s !!!\n", s.ascii() );
+		return;
+	}
+        QTextStream out( &f );
+        out << textEditKeys->text();
+	fprintf( stderr, "Keys Saved\n");
+}
 
 
 K_EXPORT_COMPONENT_FACTORY (libkaffeinedvbsc, KParts::GenericFactory<KaffeineSc>)
@@ -266,6 +304,7 @@ KaffeineSc::KaffeineSc( QWidget*, const char*, QObject* parent, const char* name
 
 	csList.setAutoDelete( true );
 	emmThreads.setAutoDelete( true );
+
 
 	QValueList<ConfigLine> list = ScConfigDialog::getNewcsConf();
 	for ( i=0; i<(int)list.count(); i++ ) {
