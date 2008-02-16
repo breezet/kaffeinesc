@@ -92,7 +92,7 @@
 #define KDELIBSUFF ""
 
 /* Name of package */
-#define PACKAGE "kaffeine-sc-plugin"
+#define PACKAGE "kaffeinesc"
 
 /* Define to the address where bug reports for this package should be sent. */
 #define PACKAGE_BUGREPORT ""
