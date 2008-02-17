@@ -72,10 +72,10 @@ ScConfigDialog::ScConfigDialog( KaffeineSc *k, QWidget *parent, QPtrList<CardCli
 	clientList->setRenameable( 5, true );
 	clientList->setRenameable( 6, true );
 
-	connect( add, SIGNAL(clicked()), this, SLOT(addEntry()) );
-	connect( del, SIGNAL(clicked()), this, SLOT(deleteEntry()) );
-	connect( saveKeys, SIGNAL(clicked()), this, SLOT(saveKeysf()) );
-	
+	connect( addBtn, SIGNAL(clicked()), this, SLOT(addEntry()) );
+	connect( delBtn, SIGNAL(clicked()), this, SLOT(deleteEntry()) );
+	connect( saveKeysBtn, SIGNAL(clicked()), this, SLOT(saveKeyFile()) );
+
 	csList = cc;
 	for ( i=0; i<(int)cc->count(); i++ ) {
 		tc = cc->at(i);
@@ -90,7 +90,6 @@ ScConfigDialog::ScConfigDialog( KaffeineSc *k, QWidget *parent, QPtrList<CardCli
 	connect( gbox, SIGNAL(toggled(bool)), this, SLOT(gboxEnabled(bool)) );
 
         loadKeyFile();
-
 }
 
 
@@ -255,10 +254,12 @@ QValueList<ConfigLine> ScConfigDialog::getNewcsConf()
 	return list;
 }
 
+
+
 void ScConfigDialog::loadKeyFile()
 {
 	QString s;
-	
+
 	s = QDir::homeDirPath()+"/.kaffeine/SoftCam.Key";
 	QFile f( s );
 	if ( !f.open(IO_ReadOnly) ) {
@@ -274,19 +275,11 @@ void ScConfigDialog::loadKeyFile()
 	f.close();
 }
 
-void ScConfigDialog::saveKeysf()
+
+
+void ScConfigDialog::saveKeyFile()
 {
-	QString s;
-	
-	s = QDir::homeDirPath()+"/.kaffeine/SoftCam.Key";
-	QFile f( s );
-	if ( !f.open(IO_WriteOnly) ) {
-		fprintf( stderr, "Can't open %s !!!\n", s.ascii() );
-		return;
-	}
-        QTextStream out( &f );
-        out << textEditKeys->text();
-	fprintf( stderr, "Keys Saved\n");
+	emit saveSoftcamKey( textEditKeys->text() );
 }
 
 
@@ -354,6 +347,7 @@ void KaffeineSc::configDialog()
 {
 	ScConfigDialog dlg( this, 0, &csList );
 	connect( &dlg, SIGNAL(removeCardClient(CardClient*)), this, SLOT(removeCardClient(CardClient*)) );
+	connect( &dlg, SIGNAL(saveSoftcamKey(const QString&)), this, SLOT(saveSoftcamKey(const QString&)) );
 	dlg.exec();
 }
 
@@ -408,6 +402,27 @@ void KaffeineSc::runTpsAu( int anum, int tnum )
 	}
 	tpsau.go( anum, tnum );
 	tpsauTimer.start( 3000 );
+}
+
+
+
+void KaffeineSc::saveSoftcamKey( const QString &text )
+{
+	QString s;
+
+	scMutex.lock();
+
+	s = QDir::homeDirPath()+"/.kaffeine/SoftCam.Key";
+	QFile f( s );
+	if ( !f.open(IO_WriteOnly) ) {
+		fprintf( stderr, "Can't open %s !!!\n", s.ascii() );
+		scMutex.unlock();
+		return;
+	}
+        QTextStream out( &f );
+        out << text;
+	fprintf( stderr, "SoftCam.Key Saved\n");
+	scMutex.unlock();
 }
 
 

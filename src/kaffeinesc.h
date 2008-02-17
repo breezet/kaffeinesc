@@ -62,12 +62,13 @@ protected slots:
 	void accept();
 	void addEntry();
 	void deleteEntry();
- 	void saveKeysf();
+	void saveKeyFile();
 	void clientChanged( QListViewItem *it);
 	void gboxEnabled( bool b );
 
 signals:
 	void removeCardClient( CardClient* );
+	void saveSoftcamKey( const QString &text );
 };
 
 
@@ -99,6 +100,7 @@ private slots:
 	void runTpsAu( int anum, int tnum );
 	void runTpsAu();
 	void newKey( const QStringList & );
+	void saveSoftcamKey( const QString &text );
 
 private:
 
