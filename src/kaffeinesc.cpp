@@ -89,6 +89,8 @@ ScConfigDialog::ScConfigDialog( KaffeineSc *k, QWidget *parent, QPtrList<CardCli
 	connect( clientList, SIGNAL(itemRenamed(QListViewItem*)), this, SLOT(clientChanged(QListViewItem*)) );
 	connect( gbox, SIGNAL(toggled(bool)), this, SLOT(gboxEnabled(bool)) );
 
+	textEditKeys->setFont( addBtn->font() );
+
         loadKeyFile();
 }
 
