@@ -80,7 +80,7 @@ M1 XXX <128 hex characters>   ; RSA key
 N XXXX NN ZZ <32/48/192 characters> ; EMM keys (literal 'NN'), some examples:
 N XXXX NN 02 <32/48 characters>     ; EMM-G IDEA key (former N XXXX 02)
 N XXXX NN 12 <192 characters>       ; EMM-G RSA key  (former N XXXX N2)
-N XXXX NN 52 <192 characters>	      ; D+ EMM RSA2 (former N XXXX M2)
+N XXXX NN 52 <192 characters>	    ; D+ EMM RSA2 (former N XXXX M2)
 ;
 ; where
 ; XXXX = provider (hex)
