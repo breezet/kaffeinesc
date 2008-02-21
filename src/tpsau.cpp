@@ -303,7 +303,7 @@ TpsAu::~TpsAu()
 bool TpsAu::getSection( int timeout )
 {
 	int n=0;
-	int skip=0;
+//	int skip=0; //unused var
 	int min=4;
 
 	if ( poll(pf,1,timeout)>0 ){

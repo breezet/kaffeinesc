@@ -551,7 +551,7 @@ void Emm::Nagra2( unsigned char *buffer )
 	int keyset=(buffer[12]&0x03);
 	int sel=(buffer[12]&0x10)<<2;
 	int rsasel=(id==0x4101 || id==0x4001) ? 0:sel; // D+ hack
-	int sigsel=(buffer[13]&0x80)>>1;
+//	int sigsel=(buffer[13]&0x80)>>1; // unused var
 	if ( !(rsakey=findKey( id, keyset+0x10+rsasel, 96 )) )  {
     		//fprintf(stderr,"logger-nagra2: missing %04x NN %.02X RSA key (96 bytes) pid: %d\n",id,keyset+0x10+rsasel, pid );
     		return;
@@ -829,7 +829,7 @@ void Emm::Viaccess( unsigned char *buffer )
 									cnt=scanlen;
 								break;
 							case 0xF0: { // signature
-								char str[20], str2[20];
+//								char str[20], str2[20]; // unused vars
 								vc->cv.Hash();
 								if(!memcmp(&scan[cnt],vc->cv.hbuff,sizeof(vc->cv.hbuff))) {
 									unsigned char key[8];
