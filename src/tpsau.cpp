@@ -303,7 +303,7 @@ TpsAu::~TpsAu()
 bool TpsAu::getSection( int timeout )
 {
 	int n=0;
-//	int skip=0; //unused var
+	int skip=0;
 	int min=4;
 
 	if ( poll(pf,1,timeout)>0 ){
@@ -409,7 +409,7 @@ bool TpsAu::processAU( const cOpenTVModule *mod )
     if(c[i] == 0x81) { // PushEA DS:$xxxx
       unsigned int addr=(c[i+1]<<8)|c[i+2];
       if(addr<(datahdr->dlen-3)) {
-        if(d[addr+1]==0x00 && d[addr+3]==0x00 && (d[addr+4]==3|d[addr+4]==2)) kd=addr;
+        if(d[addr+1]==0x00 && d[addr+3]==0x00 && (d[addr+4]==3||d[addr+4]==2||d[addr+4]==1)) kd=addr;
         else if(d[addr]==0x73 && d[addr+1]==0x25) {
           static const unsigned char scan1[] = { 0x28, 0x20, 0x20, 0xC0 };
           for(int j=2; j < 0xC; j++)
