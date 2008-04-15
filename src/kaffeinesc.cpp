@@ -192,12 +192,27 @@ void ScConfigDialog::accept()
 void ScConfigDialog::saveNewcsConf( QValueList<ConfigLine> list )
 {
 	QString s, c;
+        const QString k(".kaffeine");
+        const QString conf_name("/NewCS.conf");
 	int i;
 
-	s = QDir::homeDirPath()+"/.kaffeine/NewCS.conf";
-	QFile f( s );
-	if ( !f.open(IO_WriteOnly) )
+        // First create configuration directory, if it does not exists.
+        QDir h = QDir::home();
+        if(!h.exists(k)) {
+                if(!h.mkdir(k)) {
+                        fprintf( stderr, "Can't mkdir %s !!!\n", h.filePath(k).ascii());
+                        return;
+                }
+        }
+
+        // Then, create a new temporary configuration file.
+        // This avoids potentially corrupting the current configuration file, if something goes wrong.
+        QFile f( h.filePath(k+conf_name+"~") );
+        if ( !f.open(IO_WriteOnly) ) {
+                fprintf( stderr, "Can't open %s !!!\n", f.name().ascii() ); 
 		return;
+
+	}
 
 	QTextStream t( &f );
 	t<< "# Newcs servers list\n";
@@ -219,6 +234,10 @@ void ScConfigDialog::saveNewcsConf( QValueList<ConfigLine> list )
 	}
 
 	f.close();
+ 
+        // Finally, replace the current configuration file (if any), with the new temp file.
+        h.rename( f.name(), h.filePath(k+conf_name) );
+
 }
 
 
