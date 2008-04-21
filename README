@@ -8,19 +8,16 @@ It requires Kaffeine version >= 0.8.2
 ************************************************************************************************************************************
 -------------------------------------------
 IMPORTANT !!
-Before compiling, edit FFdecsa/Makefile for your arch (defaults to athlon-xp)
+Before compiling, edit FFdecsa/Makefile for your arch (defaults to athlon-xp) 
+ read src/FFdecsa/docs/how_to_compile.txt
 -------------------------------------------
 -------------------------------------------
 Kaffeine-sc supports "delayed descrambling".
-See the file kaffeine-sc-finetune
+ see the file kaffeine-sc-finetune
 -------------------------------------------
 -------------------------------------------
 To use gbox filter see gbox-share-info
 -------------------------------------------
--------------------------------------------
-unaligned.h defines are now on crypto.cpp and cryptoworks.cpp
-if they dont work for you comment them and uncoment the asm/unligned.h include
-refer to troubleshooting if problem presists
 -------------------------------------------
 ************************************************************************************************************************************
 
@@ -74,8 +71,8 @@ N2 XXX <128 hex characters>
 ;
 ;
 ; Nagra2
-N XXX YY  <32 hex characters>  ; IDEA opkey (00/01)
-M1 XXX <128 hex characters>   ; RSA key
+N XXXX YY <32 hex characters>  ; IDEA opkey (00/01)
+M1 XXXX <128 hex characters>   ; RSA key
 ;
 N XXXX NN ZZ <32/48/192 characters> ; EMM keys (literal 'NN'), some examples:
 N XXXX NN 02 <32/48 characters>     ; EMM-G IDEA key (former N XXXX 02)
@@ -94,9 +91,9 @@ N 0503 USE 0501
 ;
 ;
 ; Cryptoworks
-; W XXXX YY ZZ VV <32 hex characters> ; opkey
-; W XXXX YY ZZ VV <128 hex characters> ; RSA key (normaly ZZ=10)
-; W XXXX YY CC <12 hex characters> ; cardkey (literal 'CC')
+W XXXX YY ZZ VV <32 hex characters> ; opkey
+W XXXX YY ZZ VV <128 hex characters> ; RSA key (normaly ZZ=10)
+W XXXX YY CC <12 hex characters> ; cardkey (literal 'CC')
 ;
 ; where
 ; XXXX - caid
@@ -104,8 +101,6 @@ N 0503 USE 0501
 ; ZZ - keytype (20/31/10 derived from cardfiles EF20/EF31/EF10)
 ; VV - keyid (00/01)
 ;
-;
-Note: TSID, SID can be checked out in Channels menu, selecting channel and then Channel Editor.
 ************************************************************************************************************************************
 
 
@@ -116,8 +111,8 @@ Note: TSID, SID can be checked out in Channels menu, selecting channel and then 
 Auto Update:
 
 - for irdeto1 AU, you need a "Ird-Beta.KID" file in $HOME/.kaffeine
-- for viaccess AU, you need a "Viaccess.KID" file in $HOME/.kaffeine
-- for nagra2 AU, you need relevant keys in SoftCam.Key
+- for viaccess 2.3 AU, you need a "Viaccess.KID" file in $HOME/.kaffeine
+- for TPS AU tune to HB 13°E - 10873MHz (FRANCE 5 / FRANCE 4) & wait until the channel is decrypted
 
 *************************************************************************************************************************************
 
@@ -127,20 +122,8 @@ Auto Update:
 
 
 *************************************************************************************************************************************
-Additionnal settings are available in menu->DVB->dvb settings->dvb plugins->Softcam
-
+NewCS settings & a Key editor gui are available in menu->DVB->dvb settings->dvb plugins->Softcam
 *************************************************************************************************************************************
-
-
-
-
-
-
-************************************************************************************************************************************
-Note about TPS Aes:
-----------------------------
-To use the TPS AutoUpdate feature, tune to 10873MHz (FRANCE 5 / FRANCE 4) and wait some seconds (until the channel is decrypted). Do it each day.
-************************************************************************************************************************************
 
 
 
@@ -161,7 +144,7 @@ A: You have to install kernel headers. If compiler still complains, do the follo
 
 Q: my softcam.key works in window$ but kaffeine complains about missing keys, why?
 A: kaffeine-sc SofCam.Key (case sensitive!!) format is different than window$ one.
-    The format is explained in this file, read it carrefully.
+    The format is explained in this file, read it carefully.
 
 Q: I don't understand how to convert my window$ softcam.key to have it working with kaffeine-sc.
 A: Search here and there, ask friends, forums, etc.. in order to understand what you are doing.
@@ -172,4 +155,12 @@ A: Search here and there, ask friends, forums, etc.. in order to understand what
     	4) That's freedom.
     	5) That's Linux philosophy.
     	6) That's freedom.
+
+Q: What's about x86_64?
+A: Kernel header defines are now in crypto.cpp and cryptoworks.cpp, so you should be ready to go.
+    If they dont work for your kernel comment them and uncoment the asm/unaligned.h includes. 
+    Note that your kernel headers need to be linked to /usr/src/linux/include/asm/unaligned.h for this.
+
+Q: How do i get the CA system ID, Transpont Stream ID & Service ID for Constant CW?
+A: Start Kaffeine from a terminal and read the log. The CA-ID TSID & SID will appear in there.
 ************************************************************************************************************************************
