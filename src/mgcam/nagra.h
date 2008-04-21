@@ -3,39 +3,6 @@
 #include <openssl/sha.h>
 #include "openssl-compat.h"
 
-// -- cMapCore -----------------------------------------------------------------
-
-#define SETSIZE  0x02
-#define IMPORT_J 0x03
-#define IMPORT_A 0x04
-#define IMPORT_B 0x05
-#define IMPORT_C 0x06
-#define IMPORT_D 0x07
-#define EXPORT_A 0x0A
-#define EXPORT_B 0x0B
-#define EXPORT_C 0x0C
-#define EXPORT_D 0x0D
-
-class cMapCore {
-private:
-  cBN x, y, s, j;
-  SHA_CTX sctx;
-protected:
-  cBN A, B, C, D, J;
-  cBN H, R;
-  cBNctx ctx;
-  int wordsize;
-  //
-  void ImportReg(unsigned char reg, const unsigned char *data, int l=0);
-  void ExportReg(unsigned char reg, unsigned char *data, int l=0, bool BE=false);
-  void SetWordSize(int l) { wordsize=l; }
-  void MakeJ(void);
-  void MonMul(BIGNUM *o, BIGNUM *i1, BIGNUM *i2);
-  bool DoMap(int f, unsigned char *data=0, int l=0);
-public:
-  cMapCore(void);
-};
-
 class cNagraDES {
 private:
   cDes des;
@@ -67,7 +34,7 @@ public:
   bool DecryptECM(const unsigned char *in, unsigned char *out, const unsigned char *vkey, int len, BIGNUM *e1, BIGNUM *n1, BIGNUM *n2);
 };
 
-class cNagra2 : public cNagra, cMapCore {
+class cNagra2 : public cNagra {
 private:
   static const unsigned char primes[];
   unsigned seed[5], cwkey[8];

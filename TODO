@@ -1,12 +1,14 @@
 KaffeineSC TODO LIST:
 
-
 - Add Nagra1 Autoroll
 
-- Code clean ups
+- add a ROM mapper for Premiere N2 AU (see vdr-sc nagra2-0501.c)
 
-- Remove D+ AU Nagra2 no longer on this provider... added in 0.3.1
+- Code clean ups (
 
 - Enable disable checkbox at the end of the newcamd/newcs entrys
 
 - Conax (? usefull ? there are no keys... ), SHLCrypt
+
+Patches Welcome! 
+post them at dvbn.happysat.org

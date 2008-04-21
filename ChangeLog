@@ -1,4 +1,5 @@
 0.3.9
+- Removed old D+ N2 AU code
 - Better conffile handling (patch by stefanb)
 - TPS fix 11.04.2008
 - New and improved SC window

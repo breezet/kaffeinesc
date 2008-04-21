@@ -1252,7 +1252,7 @@ bool DVBscam::Nagra2(unsigned char *data)
 
 bool DVBscam::Nagra3()
 {
-		fprintf( stderr, "Nagra3 found (not implemented yet) only for card server\n");
+		fprintf( stderr, "found Nagra3 (card server only)\n");
 	return false;	
 
 }

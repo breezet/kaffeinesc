@@ -250,7 +250,7 @@ void Emm::process()
 			if ( sbufLen<11 )
 				break;
 			int id=sbuf[10]*256+sbuf[11];
-			if ( id==0x501 ||id==0x503 ||id==0x511 || id==0x4101 || id==0x4001 || id==0x7001 )
+			if ( id==0x501 ||id==0x503 ||id==0x511 || id==0x7001 )
 				Nagra2( sbuf );
 			break;
 	}
@@ -550,15 +550,6 @@ void Emm::Nagra2( unsigned char *buffer )
 
 	int keyset=(buffer[12]&0x03);
 	int sel=(buffer[12]&0x10)<<2;
-	int rsasel=(id==0x4101 || id==0x4001) ? 0:sel; // D+ hack
-//	int sigsel=(buffer[13]&0x80)>>1; // unused var
-	if ( !(rsakey=findKey( id, keyset+0x10+rsasel, 96 )) )  {
-    		//fprintf(stderr,"logger-nagra2: missing %04x NN %.02X RSA key (96 bytes) pid: %d\n",id,keyset+0x10+rsasel, pid );
-    		return;
-    	}
-    	else {
-		//fprintf(stderr,"logger-nagra2: got %04x NN %.02X RSA key (96 bytes) pid: %d\n",id,keyset+0x10+rsasel, pid );
-	}
 
 	if ( !(ideakey=findKey( id, keyset, 24 )) ) {
 		if ( !(ideakey=findKey( id, keyset, 16 )) ) {
@@ -673,9 +664,6 @@ void Emm::Nagra2( unsigned char *buffer )
 			case 0xE3: // Eeprom update
 				i+=emmdata[i+4]+4;
 				break;*/
-			case 0xBA: // skip D+ cpu code
-				i+=22;
-				break;
 			case 0xE1:
 			case 0xE2:
 			case 0x00: // end of processing
