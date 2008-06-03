@@ -79,8 +79,10 @@ ScConfigDialog::ScConfigDialog( KaffeineSc *k, QWidget *parent, QPtrList<CardCli
 	csList = cc;
 	for ( i=0; i<(int)cc->count(); i++ ) {
 		tc = cc->at(i);
-		if ( tc->getHost()=="127.0.0.1" && tc->getUser()=="ccam_indirect" )
+		if ( tc->getHost()=="127.0.0.1" && tc->getUser()=="gbox_indirect" )
 			gbox->setChecked( true );
+		else if ( tc->getHost()=="127.0.0.1" && tc->getUser()=="ccam_indirect" )
+			ccam->setChecked( true );
 		else
 			new ScListViewItem( tc, clientList, tc->getHost(), tc->getUser(), tc->getPass(),
 			s.setNum(tc->getPort()), tc->getCkey(), tc->getCAID(), tc->getProv() );
@@ -88,6 +90,7 @@ ScConfigDialog::ScConfigDialog( KaffeineSc *k, QWidget *parent, QPtrList<CardCli
 
 	connect( clientList, SIGNAL(itemRenamed(QListViewItem*)), this, SLOT(clientChanged(QListViewItem*)) );
 	connect( gbox, SIGNAL(toggled(bool)), this, SLOT(gboxEnabled(bool)) );
+	connect( ccam, SIGNAL(toggled(bool)), this, SLOT(ccamEnabled(bool)) );
 
 	textEditKeys->setFont( addBtn->font() );
 
@@ -104,6 +107,35 @@ void ScConfigDialog::gboxEnabled( bool b )
 	for ( i=0; i<(int)csList->count(); i++ ) {
 		tc = csList->at(i);
 		if ( tc->getHost()=="127.0.0.1" && tc->getUser()=="gbox_indirect" )
+			break;
+		else
+			tc = 0;
+	}
+
+	if ( b ) {
+		if ( tc )
+			return;
+		tc = new GboxClient( "", "", "", 0, "", "", "" );
+		csList->append( tc );
+		connect( tc, SIGNAL(killMe(CardClient*)), ksc, SLOT(killCardClient(CardClient*)) );
+	}
+	else {
+		if ( !tc )
+			return;
+		emit removeCardClient( tc );
+	}
+}
+
+
+
+void ScConfigDialog::ccamEnabled( bool b )
+{
+	int i;
+	CardClient *tc=0;
+
+	for ( i=0; i<(int)csList->count(); i++ ) {
+		tc = csList->at(i);
+		if ( tc->getHost()=="127.0.0.1" && tc->getUser()=="ccam_indirect" )
 			break;
 		else
 			tc = 0;
@@ -182,7 +214,8 @@ void ScConfigDialog::accept()
 		it = it->nextSibling();
 	}
 	if ( gbox->isChecked() )
-		//list.append( ConfigLine( "127.0.0.1", "gbox_indirect", "gbox_indirect", 0, "00", "00", "00" ) );
+		list.append( ConfigLine( "127.0.0.1", "gbox_indirect", "gbox_indirect", 0, "00", "00", "00" ) );
+	if ( ccam->isChecked() )
 		list.append( ConfigLine( "127.0.0.1", "ccam_indirect", "ccam_indirect", 0, "00", "00", "00" ) );
 	saveNewcsConf( list );
 	done( Accepted );
@@ -210,7 +243,7 @@ void ScConfigDialog::saveNewcsConf( QValueList<ConfigLine> list )
         // This avoids potentially corrupting the current configuration file, if something goes wrong.
         QFile f( h.filePath(k+conf_name+"~") );
         if ( !f.open(IO_WriteOnly) ) {
-                fprintf( stderr, "Can't open %s !!!\n", f.name().ascii() ); 
+                fprintf( stderr, "Can't open %s !!!\n", f.name().ascii() );
 		return;
 
 	}
@@ -235,7 +268,7 @@ void ScConfigDialog::saveNewcsConf( QValueList<ConfigLine> list )
 	}
 
 	f.close();
- 
+
         // Finally, replace the current configuration file (if any), with the new temp file.
         h.rename( f.name(), h.filePath(k+conf_name) );
 

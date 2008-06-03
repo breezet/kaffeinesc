@@ -65,6 +65,7 @@ protected slots:
 	void saveKeyFile();
 	void clientChanged( QListViewItem *it);
 	void gboxEnabled( bool b );
+	void ccamEnabled( bool b );
 
 signals:
 	void removeCardClient( CardClient* );
