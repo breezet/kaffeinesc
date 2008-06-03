@@ -53,6 +53,7 @@ public:
 	static QValueList<ConfigLine> getNewcsConf();
 	void saveNewcsConf( QValueList<ConfigLine> list );
 	void loadKeyFile();
+	void loadECMinfo();
 
 private:
 	QPtrList<CardClient> *csList;
