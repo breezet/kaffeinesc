@@ -75,7 +75,7 @@ ScConfigDialog::ScConfigDialog( KaffeineSc *k, QWidget *parent, QPtrList<CardCli
 	connect( addBtn, SIGNAL(clicked()), this, SLOT(addEntry()) );
 	connect( delBtn, SIGNAL(clicked()), this, SLOT(deleteEntry()) );
 	connect( saveKeysBtn, SIGNAL(clicked()), this, SLOT(saveKeyFile()) );
-        connect( RefreshECMbBtn, SIGNAL(clicked()), this, SLOT(loadECMinfo()) );
+        connect( RefreshECMbBtn, SIGNAL(clicked()), this, SLOT(loadECMinfoBtn()) );
 
 	csList = cc;
 	for ( i=0; i<(int)cc->count(); i++ ) {
@@ -319,7 +319,7 @@ void ScConfigDialog::loadECMinfo()
 	QFile f( "/tmp/ecm.info" );
 	if ( !f.open(IO_ReadOnly) ) {
 		fprintf( stderr, "Can't open %s !!!\n", s.ascii() );
-		textEditECM->append("ecm.info not found maybe CCcam or Gbox not running");
+		textEditECM->append("ecm.info not found... maybe CCcam or Gbox not running?");
 		return;
 	}
 	QTextStream t( &f );
@@ -350,7 +350,11 @@ void ScConfigDialog::loadKeyFile()
 	f.close();
 }
 
-
+void ScConfigDialog::loadECMinfoBtn()
+{
+        textEditECM->clear();
+	loadECMinfo();
+}
 
 void ScConfigDialog::saveKeyFile()
 {

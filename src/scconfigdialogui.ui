@@ -192,24 +192,6 @@
                         <attribute name="title">
                             <string>ECM Info</string>
                         </attribute>
-                        <widget class="QTextEdit">
-                            <property name="name">
-                                <cstring>textEditECM</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>10</x>
-                                    <y>10</y>
-                                    <width>351</width>
-                                    <height>360</height>
-                                </rect>
-                            </property>
-                            <property name="font">
-                                <font>
-                                    <family>Monospace</family>
-                                </font>
-                            </property>
-                        </widget>
                         <spacer>
                             <property name="name">
                                 <cstring>Horizontal Spacing2_2</cstring>
@@ -249,6 +231,27 @@
                             </property>
                             <property name="text">
                                 <string>Refresh</string>
+                            </property>
+                        </widget>
+                        <widget class="QTextEdit">
+                            <property name="name">
+                                <cstring>textEditECM</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>10</x>
+                                    <y>10</y>
+                                    <width>351</width>
+                                    <height>360</height>
+                                </rect>
+                            </property>
+                            <property name="font">
+                                <font>
+                                    <family>Monospace</family>
+                                </font>
+                            </property>
+                            <property name="readOnly">
+                                <bool>true</bool>
                             </property>
                         </widget>
                     </widget>

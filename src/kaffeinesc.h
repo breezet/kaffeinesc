@@ -67,6 +67,7 @@ protected slots:
 	void clientChanged( QListViewItem *it);
 	void gboxEnabled( bool b );
 	void ccamEnabled( bool b );
+	void loadECMinfoBtn();
 
 signals:
 	void removeCardClient( CardClient* );
