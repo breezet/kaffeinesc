@@ -1,9 +1,12 @@
 #ifndef CARDCLIENT_H
 #define CARDCLIENT_H
 
+#include <netinet/in.h>
+
 #include <qstring.h>
 #include <qtimer.h>
 #include <qmutex.h>
+#include <qthread.h>
 #include <qobject.h>
 #include <qptrlist.h>
 
@@ -209,5 +212,42 @@ private:
 	bool haveShare( Ecm *e );
 	bool sameCW( unsigned char *o, unsigned char *n );
 
+};
+
+
+
+class CCcamClient : public CardClient, public QThread
+{
+	Q_OBJECT
+public:
+	CCcamClient( QString host, QString user, QString pwd, int p_ort, QString ckey, QString caid, QString prov );
+	~CCcamClient();
+	virtual bool canHandle( int, int ) { return true; }
+	virtual void setCAID( QString ) {};
+	virtual void setHost( QString ) {};
+	virtual void setUser( QString ) {};
+	virtual void setPass( QString ) {};
+	virtual void setPort( int ) {};
+	virtual void setCkey( QString ) {};
+	virtual void setProv( QString ) {};
+	virtual bool processECM( unsigned char *ECM, int len, unsigned char *cw, Ecm *e, bool &hack );
+
+protected:
+	void run();
+
+private:
+	void startPortListener();
+	void stopPortListener();
+	void Writecapmt();
+	bool login();
+	bool haveShare( Ecm *e );
+
+	int pmtversion;
+	unsigned char sacapmt[4096];
+	unsigned char savedcw[16];
+	int newcw;
+	int ccam_fd;
+	int cwccam_fd;
+	bool isRunning;
 };
 #endif

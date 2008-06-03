@@ -1,0 +1,14 @@
+# With this file, you can filter which CAID/PROVID pair are sent to CCcam
+# Format is CAID PROVID in Hex
+# Copy this file in $HOME/.kaffeine/
+# To not use this feature remove this file from $HOME/.kaffeine/
+#
+0100		80
+0100		81
+0100		6c
+0100		65
+0500		21110
+0500		23800
+1801		4101
+1801		7101
+919		0

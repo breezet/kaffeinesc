@@ -19,6 +19,8 @@
 Ecm::Ecm()
 {
 	csPort=csCAID=id=pid=system=sid=tsid=chid=0;
+	descriptor = 0;
+	descLength = 0;
 }
 
 
@@ -26,6 +28,8 @@ Ecm::Ecm()
 Ecm::~Ecm()
 {
 	counter.clear();
+	if ( descriptor )
+		delete descriptor;
 }
 
 
@@ -57,7 +61,7 @@ DVBscam::DVBscam( int anum, int tnum, QPtrList<CardClient> *list ) : DVBsection(
 
 	QString s = QString("/dev/dvb/adapter%1/video%2").arg( anum ).arg( tnum );
 	if ( (fd=open( s.ascii(), O_RDWR | O_NONBLOCK ))<0 ) {
-  perror ("open failed");
+		perror ("open failed");
 		fd = 0;
 	}
 	else {
@@ -67,6 +71,8 @@ DVBscam::DVBscam( int anum, int tnum, QPtrList<CardClient> *list ) : DVBsection(
 			perror ("open failed");
 			fd = -1;
 		}
+		else
+			close( fd );
 	}
 
 	cafd = fd;
@@ -112,7 +118,7 @@ void DVBscam::printError( QString msg )
 
 
 
-void DVBscam::addCaDesc( Ecm *e )
+void DVBscam::addCaDesc( Ecm *e, unsigned char *buf )
 {
 	int i;
 	bool add=true;
@@ -127,6 +133,9 @@ void DVBscam::addCaDesc( Ecm *e )
 	}
 	if ( add ) {
 		ecms.append( e );
+		e->descLength = getBits(buf+1,0,8)+2;
+		e->descriptor = new unsigned char[e->descLength];
+		memcpy( e->descriptor, buf, e->descLength );
 		if ( e->id )
 			fprintf( stderr, "Found %s id %x\n", e->name.ascii(), e->id );
 		else
@@ -144,6 +153,7 @@ void DVBscam::caDesc( unsigned char *buf )
 	int ca_system, ca_system_up;
 	int j, length, pid=0, id=0;
 	QString name;
+	unsigned char *buffer=buf;
 
 	length = getBits(buf+1,0,8);
 	buf +=2;
@@ -165,7 +175,7 @@ void DVBscam::caDesc( unsigned char *buf )
 				e->name = "Seca";
 				e->pid = pid;
 				e->id = id;
-				addCaDesc( e );
+				addCaDesc( e, buffer );
 			}
 		}
 	}
@@ -181,7 +191,7 @@ void DVBscam::caDesc( unsigned char *buf )
 					e->name = "Viaccess";
 					e->pid = pid;
 					e->id = id;
-					addCaDesc( e );
+					addCaDesc( e, buffer );
 				}
 			}
 			j += 2+buf[j+1];
@@ -193,7 +203,7 @@ void DVBscam::caDesc( unsigned char *buf )
 			e->system = ca_system;
 			e->name = "Dreamcrypt";
 			e->pid = pid;
-			addCaDesc( e );
+			addCaDesc( e, buffer );
 		}
 	}
 	else {
@@ -238,7 +248,7 @@ void DVBscam::caDesc( unsigned char *buf )
 				e->pid = pid;
 			else
 				e->pid = 0;
-			addCaDesc( e );
+			addCaDesc( e, buffer );
 		}
 	}
 }
@@ -384,8 +394,6 @@ void DVBscam::stop()
 		isRunning = false;
 		wait();
 	}
-	if ( cafd>0 )
-		close( cafd );
 }
 
 
@@ -1253,7 +1261,7 @@ bool DVBscam::Nagra2(unsigned char *data)
 bool DVBscam::Nagra3()
 {
 		fprintf( stderr, "found Nagra3 (card server only)\n");
-	return false;	
+	return false;
 
 }
 
@@ -1513,19 +1521,28 @@ void DVBscam::writeCw()
 	if ( cafd<=0 )
 		return;
 
+	QString s = QString("/dev/dvb/adapter%1/ca%2").arg( adapter ).arg( tuner );
+	int fd;
+	if ( (fd=open( s.ascii(), O_RDWR | O_NONBLOCK ))<0 ) {
+		perror ("open failed");
+		return;
+	}
+
 	ca_descr.index = 0;
 	ca_descr.parity = 0;
 	for ( i=0; i<8; i++ )
 		ca_descr.cw[i] = CW[i];
-  	if ( ioctl( cafd, CA_SET_DESCR, &ca_descr )<0 )
+  	if ( ioctl( fd, CA_SET_DESCR, &ca_descr )<0 )
     		perror("CA_SET_DESCR");
 
 	ca_descr.index = 0;
 	ca_descr.parity = 1;
 	for ( i=0; i<8; i++ )
 		ca_descr.cw[i] = CW[i+8];
-	if ( ioctl( cafd, CA_SET_DESCR, &ca_descr )<0)
+	if ( ioctl( fd, CA_SET_DESCR, &ca_descr )<0)
 		perror("CA_SET_DESCR");
+
+	close( fd );
 }
 
 

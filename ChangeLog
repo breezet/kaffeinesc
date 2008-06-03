@@ -1,15 +1,18 @@
+0.4.0
+- Added CCcam indirect mode client
+
 0.3.9
 - Removed old D+ N2 AU code
 - Better conffile handling (patch by stefanb)
 - TPS fix 11.04.2008
 - New and improved SC window
--- Build in keys editor 
+- Built in keys editor
 
 0.3.8
-- added "BISS" as ConstantCW 
+- added "BISS" as ConstantCW
 - Added new CA systems
 - Added Nagra3 function (not working yet) working with cardserver/newcamd only
-- PowerVU CA system is now found 
+- PowerVU CA system is now found
 - TPS fix 04-02-2008
 - Added unaligned.h defines directly (refer to README)
 - Added CW system to all channels (refer to README to set keys)

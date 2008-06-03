@@ -29,6 +29,8 @@ public :
 	QString csHost;
 	int chid;
 	QValueList<int> counter;
+	unsigned char *descriptor;
+	int descLength;
 };
 
 
@@ -77,7 +79,7 @@ protected:
 	bool parsePAT( unsigned char *buf, int sid, int &pmt, bool tsidOnly=false );
 	bool parsePMT( unsigned char* buf );
 	void caDesc( unsigned char *buf );
-	void addCaDesc( Ecm *e );
+	void addCaDesc( Ecm *e, unsigned char *buf );
 	bool getKeys();
 	bool getCachedEcms();
 	void getFineTune();

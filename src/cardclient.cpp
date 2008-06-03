@@ -9,6 +9,8 @@
 #include <sys/socket.h>
 #include <sys/poll.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/un.h>
 #include <netdb.h>
 #include <crypt.h>
 #include <byteswap.h>
@@ -986,16 +988,14 @@ bool GboxClient::processECM( unsigned char *ECM, int len, unsigned char *cw, Ecm
 	if ( !haveShare(e) )
 		return false;
 
-	mutex.lock();
+	QMutexLocker locker( &mutex );
 	cacheHasCw=false;
 	if ( isInCache( e->sid, e->tsid, ECM, len, cacheHasCw, cw ) ) {
 		fprintf( stderr, "GboxClient::processECM : cached ecm %s\n", (cacheHasCw==true)?"decoded":"failed" );
-		mutex.unlock();
 		return cacheHasCw;
 	}
 
 	if ( !connectFd() && !login() ) {
-		mutex.unlock();
 		return false;
 	}
   	Flush();
@@ -1045,14 +1045,12 @@ bool GboxClient::processECM( unsigned char *ECM, int len, unsigned char *cw, Ecm
 
 	if ( SendTo( "127.0.0.1", 8004, fakepmt, sizeof(fakepmt), GBOX_TIMEOUT )==-1 ) {
 		fprintf( stderr, "GboxClient : failed to send PMT data. GBOX running?\n" );
-		mutex.unlock();
 		return false;
 	}
 
 	int n;
 	if ( (n=GetMsg(0x8a,buff,sizeof(buff)))<=0 ) {
 		fprintf( stderr, "GboxClient : failed to get ECM port. GBOX unable to decode or not running.\n" );
-		mutex.unlock();
 		return false;
 	}
 	int pidnum=-1;
@@ -1066,14 +1064,12 @@ bool GboxClient::processECM( unsigned char *ECM, int len, unsigned char *cw, Ecm
 	}
 	if ( pidnum<0 ) {
 		fprintf( stderr, "GboxClient : GBOX is unable to decode for CAID %04X/PID %04X\n",caid,pid );
-		mutex.unlock();
 		return false;
 	}
 
 	n=len;
 	if ( n>=256 ) {
 		fprintf( stderr, "GboxClient : ECM section too long %d > 255\n",n );
-		mutex.unlock();
 		return false;
 	}
 	buff[0]=0x88;
@@ -1084,18 +1080,15 @@ bool GboxClient::processECM( unsigned char *ECM, int len, unsigned char *cw, Ecm
 	n+=4;
 	if( SendTo( "127.0.0.1", 8005+pidnum, buff, n, GBOX_TIMEOUT )==-1 ) {
 		fprintf( stderr, "GboxClient : failed to send ECM data. GBOX running?\n" );
-		mutex.unlock();
 		return false;
 	}
 
 	if ( GetMsg( 0x89, buff, sizeof(buff) )<=0 ) {
 		fprintf( stderr, "GboxClient : failed to get CW. GBOX unable to decode or not running.\n" );
-		mutex.unlock();
 		return false;
 	}
 	if ( n<17 ) {
 		fprintf( stderr, "GboxClient : bad CW answer from GBOX.?\n" );
-		mutex.unlock();
 		return false;
 	}
 	if ( !hack ) {
@@ -1127,6 +1120,270 @@ bool GboxClient::processECM( unsigned char *ECM, int len, unsigned char *cw, Ecm
 		}
 	}
 	fprintf( stderr, "GboxClient : ecm decoded.\n" );
-	mutex.unlock();
 	return true;
+}
+
+
+
+#define LIST_MORE 0x00
+// CA application should append a 'MORE' CAPMT object the list and start receiving the next object
+#define LIST_FIRST 0x01
+// CA application should clear the list when a 'FIRST' CAPMT object is received, and start receiving the next object
+#define LIST_LAST 0x02
+// CA application should append a 'LAST' CAPMT object to the list, and start working with the list
+#define LIST_ONLY 0x03
+// CA application should clear the list when an 'ONLY' CAPMT object is received, and start working with the object
+#define LIST_ADD 0x04
+// CA application should append an 'ADD' CAPMT object to the current list, and start working with the updated list
+#define LIST_UPDATE 0x05
+// CA application should replace an entry in the list with an 'UPDATE' CAPMT object, and start working with the updated list
+#define CMD_OK_DESCRAMBLING 0x01
+// CA application should start descrambling the service in this CAPMT object, as soon as the list of CAPMT objects is complete
+
+int hackMakeConnect( int fd, const sockaddr* add, int size )
+{
+	return connect( fd, add, size);
+}
+
+CCcamClient::CCcamClient( QString, QString, QString pwd, int p_ort, QString ckey, QString caid, QString prov ) :  CardClient( "127.0.0.1", "ccam_indirect", "ccam_indirect", 9000, "00", "0", "0" )
+{
+	cwccam_fd=-1;
+	pmtversion=0;
+	ccam_fd = -1;
+}
+
+
+CCcamClient::~CCcamClient()
+{
+	stopPortListener();
+}
+
+
+bool CCcamClient::haveShare( Ecm *e )
+{
+	QString s, c, p;
+	bool ret = false;
+	char caid[64];
+	char provid[64];
+
+	QFile f( QDir::homeDirPath()+"/.kaffeine/ccam-share-filter" );
+	if ( !f.open(IO_ReadOnly) )
+		return true;
+
+	QTextStream t( &f );
+	while ( !t.eof() ) {
+		s = t.readLine();
+		if ( s.startsWith("#") )
+			continue;
+		if ( sscanf( s.latin1(), "%s %s", caid, provid) != 2 )
+			continue;
+		c = caid;
+		p = provid;
+		if ( (e->system==c.toInt(0,16)) && (e->id==p.toInt(0,16)) ) {
+			ret = true;
+			break;
+		}
+	}
+
+	f.close();
+	if ( !ret )
+		fprintf(stderr,"CCcamClient: CAID=%04X ProvID=%04X filtered by ccam-share-filter\n", e->system, e->id );
+	return ret;
+}
+
+
+bool CCcamClient::login()
+{
+	int rc;
+	int so =0;
+	sockaddr_un serv_addr_un;
+	char camdsock[256];
+	int res;
+
+	struct sockaddr_in servAddr;
+	fflush(NULL);
+	close(ccam_fd);
+	sprintf(camdsock,"/tmp/camd.socket");
+	fprintf( stderr, "CCcamClient: socket = %s\n",camdsock);
+	ccam_fd=socket(AF_LOCAL, SOCK_STREAM, 0);
+	bzero(&serv_addr_un, sizeof(serv_addr_un));
+	serv_addr_un.sun_family = AF_LOCAL;
+	strcpy(serv_addr_un.sun_path, camdsock);
+	res=hackMakeConnect(ccam_fd, (const sockaddr*)&serv_addr_un, sizeof(serv_addr_un));
+	if (res !=0) {
+		fprintf( stderr, "CCcamClient: Couldnt open camd.socket..... errno = %d\n",errno);
+		close(ccam_fd);
+		ccam_fd = -1;
+	}
+	fprintf( stderr, "CCcamClient: Opened camd.socket..... ccamd_fd  = %d\n",ccam_fd );
+	if (cwccam_fd!=-1)
+		return true;
+	fprintf( stderr, "CCcamClient: logging in\n");
+	so=socket(AF_INET, SOCK_DGRAM, 0);
+	if(so<0) {
+		close(so);
+		fprintf( stderr, "CCcamClient: not logged in\n");
+		return false;
+	}
+	bzero(&servAddr, sizeof(servAddr));
+	servAddr.sin_family = AF_INET;
+	servAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	servAddr.sin_port = htons(port);
+	rc = bind (so, (struct sockaddr *) &servAddr,sizeof(servAddr));
+	if(rc<0) {
+		close(so);
+		fprintf( stderr, "CCcamClient: not logged in\n");
+		return false;
+	}
+	cwccam_fd =so;
+	fprintf( stderr, "CCcamClient: logged in\n");
+
+	return true;
+}
+
+
+bool CCcamClient::processECM( unsigned char *ECM, int len, unsigned char *cw, Ecm *e, bool &hack )
+{
+	if ( !haveShare( e ) )
+		return false;
+
+	QMutexLocker locker( &mutex );
+
+	unsigned char capmt[4096];
+	fprintf( stderr, "CCcamClient: Processing ECM....\n" );
+	const int caid=e->system;
+	const int pid=e->pid;
+	int pos;
+
+	memcpy(capmt,"\x9f\x80\x32\x82\x00\x00", 6);
+	capmt[6]=LIST_ONLY;
+	capmt[7]=(e->sid>>8) & 0xff; // sid
+	capmt[8]=e->sid & 0xff; // sid
+	capmt[9]=pmtversion; //reserved - version - current/next
+	pmtversion++;
+	pmtversion%=32;
+
+	if ( e->descriptor ) {
+		capmt[12] = CMD_OK_DESCRAMBLING;
+		unsigned short plen = e->descLength+1;
+		capmt[10]= (plen>>8) & 0xff;
+		capmt[11]= plen & 0xff;
+		fprintf( stderr, "Descriptor: len =%d, caid=%d, pid=%d, sid=%d\n", e->descLength, e->system, e->pid, e->sid );
+		memcpy( &capmt[13], e->descriptor, e->descLength );
+		pos = 13+e->descLength;
+	}
+	else {
+		fprintf( stderr, "NO DESCRIPTOR\n");
+		return false;
+	}
+
+	capmt[pos++] = 0x02; // stream type
+	capmt[pos++]= 0x00; capmt[pos++]= 0x64; // es_pid
+	capmt[pos++]= 0x00; capmt[pos++]= 0x00; // es_info_len
+
+	capmt[4] = ((pos-7)>>8) & 0xff;
+	capmt[5] = (pos-7) & 0xff;
+
+	if ( !login() )
+		return false;
+	fprintf( stderr, "CCcamClient: sending capmts\n");
+	memcpy(sacapmt,capmt,4096);
+	Writecapmt();
+	startPortListener();
+	int u=0;
+	while ( (newcw==0) && (u++<100) )
+		usleep(100000);			 // give the card a chance to decode it...
+	stopPortListener();
+	if ( newcw==0 ) {
+		fprintf( stderr, "CCcamClient: FAILED ECM !!!!!!!!!!!!!!!!!!\n" );
+		sacapmt[9]=pmtversion;		 //reserved - version - current/next
+		pmtversion++;
+		pmtversion%=32;
+		return false;
+	}
+	memcpy( cw,savedcw,16 );
+	newcw=0;
+	fprintf( stderr, "CCcamClient: GOT CW !!!!!!!!!!!!!!!!!!\n" );
+	return true;
+}
+
+
+void CCcamClient::Writecapmt()
+{
+	int len;
+	int list_management ;
+	list_management = LIST_ONLY;
+	sacapmt[6] = list_management;
+	len = sacapmt[4] << 8;
+	len |= sacapmt[5];
+	len += 6;
+	int retry = 1;
+	for ( int i=0; i<2; ++i ) {
+		fprintf( stderr, "CCcamClient: Writing capmt  ==============================\n" );
+		if (ccam_fd==-1)
+			login();
+		if (ccam_fd==-1)
+			return ;
+
+		int r = write( ccam_fd, &sacapmt[0],len );
+		if (r != len) {
+			fprintf( stderr, "CCcamClient: CCcam probably has crashed or been killed...\n");
+			close(ccam_fd);
+			ccam_fd=-1;
+		}
+		else
+			break;
+	}
+}
+
+
+void CCcamClient::startPortListener()
+{
+	fprintf( stderr, "CCcamClient: starting UDP listener\n");
+	isRunning = true;
+	start();
+}
+
+
+void CCcamClient::stopPortListener()
+{
+	isRunning = false;
+	wait();
+}
+
+
+void CCcamClient::run()
+{
+	int n;
+	unsigned char cw[18];
+	struct sockaddr cliAddr;
+	socklen_t cliLen;
+	cliLen = sizeof(cliAddr);
+	struct pollfd pfd[1];
+	pfd[0].fd = cwccam_fd;
+	pfd[0].events = POLLIN;
+
+	while ( isRunning ) {
+		//fprintf(stderr, "CCcamClient: -----------------RUN---------------\n");
+		if ( poll( pfd, 1, 100 ) ) {
+			fprintf(stderr,"CCcamClient: reading 127.0.0.1:9000\n");
+			n = ::recvfrom(cwccam_fd, cw, 18, 0, (struct sockaddr *) &cliAddr, &cliLen);
+		}
+		//else
+		//	fprintf(stderr,"CCcamClient: Can't read 127.0.0.1:9000\n");
+		if ( n==18 ) {
+			//fprintf( stderr, "CCcamClient: Got: %02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx  %02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx\n",
+				//cw[2], cw[3], cw[4], cw[5], cw[6], cw[7], 	cw[8], cw[9], cw[10], cw[11],
+				//cw[12], cw[13], cw[14], cw[15], cw[16], cw[17]);
+
+			if (newcw==1) {
+				close(ccam_fd);
+				ccam_fd=-1;
+			}
+			memcpy( savedcw, cw+2, 16 );
+			newcw =1;
+			//fprintf( stderr, "CCcamClient: SAVING KEYS FROM CCCAM !!!!!!!!!!!\n" );
+		}
+	}
+	//fprintf(stderr, "CCcamClient: -----------------RUN-STOP---------------\n");
 }

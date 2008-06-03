@@ -22,7 +22,7 @@
 #include "kaffeinesc.h"
 #include "kaffeinesc.moc"
 
-#define SCVERSION "0.3.9-svn"
+#define SCVERSION "0.4.0"
 
 
 
@@ -79,7 +79,7 @@ ScConfigDialog::ScConfigDialog( KaffeineSc *k, QWidget *parent, QPtrList<CardCli
 	csList = cc;
 	for ( i=0; i<(int)cc->count(); i++ ) {
 		tc = cc->at(i);
-		if ( tc->getHost()=="127.0.0.1" && tc->getUser()=="gbox_indirect" )
+		if ( tc->getHost()=="127.0.0.1" && tc->getUser()=="ccam_indirect" )
 			gbox->setChecked( true );
 		else
 			new ScListViewItem( tc, clientList, tc->getHost(), tc->getUser(), tc->getPass(),
@@ -112,7 +112,7 @@ void ScConfigDialog::gboxEnabled( bool b )
 	if ( b ) {
 		if ( tc )
 			return;
-		tc = new GboxClient( "", "", "", 0, "", "", "" );
+		tc = new CCcamClient( "", "", "", 0, "", "", "" );
 		csList->append( tc );
 		connect( tc, SIGNAL(killMe(CardClient*)), ksc, SLOT(killCardClient(CardClient*)) );
 	}
@@ -182,7 +182,8 @@ void ScConfigDialog::accept()
 		it = it->nextSibling();
 	}
 	if ( gbox->isChecked() )
-		list.append( ConfigLine( "127.0.0.1", "gbox_indirect", "gbox_indirect", 0, "00", "00", "00" ) );
+		//list.append( ConfigLine( "127.0.0.1", "gbox_indirect", "gbox_indirect", 0, "00", "00", "00" ) );
+		list.append( ConfigLine( "127.0.0.1", "ccam_indirect", "ccam_indirect", 0, "00", "00", "00" ) );
 	saveNewcsConf( list );
 	done( Accepted );
 }
@@ -324,6 +325,8 @@ KaffeineSc::KaffeineSc( QWidget*, const char*, QObject* parent, const char* name
 	for ( i=0; i<(int)list.count(); i++ ) {
 		if ( list[i].user=="gbox_indirect" && list[i].host=="127.0.0.1" )
 			cc = new GboxClient( "", "", "", 0, "", "", "" );
+		else if ( list[i].user=="ccam_indirect" && list[i].host=="127.0.0.1" )
+			cc = new CCcamClient( "", "", "", 0, "", "", "" );
 		else
 			cc = new NewCSClient( list[i].host, list[i].user, list[i].pass, list[i].port, list[i].key.ascii(), list[i].caid, list[i].prov );
 		csList.append( cc );
