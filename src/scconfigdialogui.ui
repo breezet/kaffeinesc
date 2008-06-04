@@ -192,68 +192,66 @@
                         <attribute name="title">
                             <string>ECM Info</string>
                         </attribute>
-                        <spacer>
+                        <grid>
                             <property name="name">
-                                <cstring>Horizontal Spacing2_2</cstring>
+                                <cstring>unnamed</cstring>
                             </property>
-                            <property name="orientation">
-                                <enum>Horizontal</enum>
-                            </property>
-                            <property name="sizeType">
-                                <enum>Expanding</enum>
-                            </property>
-                            <property name="sizeHint">
-                                <size>
-                                    <width>210</width>
-                                    <height>20</height>
-                                </size>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>370</x>
-                                    <y>350</y>
-                                    <width>210</width>
-                                    <height>20</height>
-                                </rect>
-                            </property>
-                        </spacer>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>RefreshECMbBtn</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>590</x>
-                                    <y>343</y>
-                                    <width>105</width>
-                                    <height>27</height>
-                                </rect>
-                            </property>
-                            <property name="text">
-                                <string>Refresh</string>
-                            </property>
-                        </widget>
-                        <widget class="QTextEdit">
-                            <property name="name">
-                                <cstring>textEditECM</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>10</x>
-                                    <y>10</y>
-                                    <width>351</width>
-                                    <height>360</height>
-                                </rect>
-                            </property>
-                            <property name="font">
-                                <font>
-                                    <family>Monospace</family>
-                                </font>
-                            </property>
-                            <property name="readOnly">
-                                <bool>true</bool>
-                            </property>
-                        </widget>
+                            <widget class="QTextEdit" row="0" column="0" rowspan="2" colspan="1">
+                                <property name="name">
+                                    <cstring>textEditECM</cstring>
+                                </property>
+                                <property name="font">
+                                    <font>
+                                        <family>Monospace</family>
+                                    </font>
+                                </property>
+                                <property name="readOnly">
+                                    <bool>true</bool>
+                                </property>
+                            </widget>
+                            <spacer row="1" column="1">
+                                <property name="name">
+                                    <cstring>Horizontal Spacing2_2</cstring>
+                                </property>
+                                <property name="orientation">
+                                    <enum>Horizontal</enum>
+                                </property>
+                                <property name="sizeType">
+                                    <enum>Expanding</enum>
+                                </property>
+                                <property name="sizeHint">
+                                    <size>
+                                        <width>250</width>
+                                        <height>20</height>
+                                    </size>
+                                </property>
+                            </spacer>
+                            <widget class="QPushButton" row="1" column="2">
+                                <property name="name">
+                                    <cstring>RefreshECMbBtn</cstring>
+                                </property>
+                                <property name="text">
+                                    <string>Refresh</string>
+                                </property>
+                            </widget>
+                            <spacer row="0" column="1">
+                                <property name="name">
+                                    <cstring>spacer6</cstring>
+                                </property>
+                                <property name="orientation">
+                                    <enum>Vertical</enum>
+                                </property>
+                                <property name="sizeType">
+                                    <enum>Expanding</enum>
+                                </property>
+                                <property name="sizeHint">
+                                    <size>
+                                        <width>20</width>
+                                        <height>40</height>
+                                    </size>
+                                </property>
+                            </spacer>
+                        </grid>
                     </widget>
                 </widget>
                 <widget class="QLayoutWidget" row="1" column="0">
