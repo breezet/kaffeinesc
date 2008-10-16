@@ -339,14 +339,15 @@ void TpsAu::run()
 {
 	cOpenTVModule *mod=0;
 
-	if ( !openFilter( 4850, 0, 1000, true ) ) {
+	if ( !openFilter( 6837, 0, 1000, true ) ) {
 		isRunning = false;
 		return;
 	}
 	int r=0;
 	while ( r==0 ) {
-		if ( !getSection( 1000 ) )
+		if ( !getSection( 1000 ) ) {
 			break;
+		}
 
 		if(cOpenTVModule::Id(sbuf)==2) {
 			if(!mod) mod=new cOpenTVModule(sbuf);
@@ -409,14 +410,14 @@ bool TpsAu::processAU( const cOpenTVModule *mod )
     if(c[i] == 0x81) { // PushEA DS:$xxxx
       unsigned int addr=(c[i+1]<<8)|c[i+2];
       if(addr<(datahdr->dlen-3)) {
-        if(d[addr+1]==0x00 && d[addr+3]==0x00 && (d[addr+4]==3|d[addr+4]==2||d[addr+4]==1)) kd=addr;
-        else if(d[addr]==0x73 && d[addr+1]==0x25) {
-          static const unsigned char scan1[] = { 0x28, 0x20, 0x20, 0xC0 };
-          for(int j=2; j < 0xC; j++)
-            if(!memcmp(&d[addr+j],scan1,sizeof(scan1))) { cb1=addr; break; }
-          }
-        else if(cb1 && !cb2) cb2=addr;
-        else if(cb1 && cb2 && !cb3) cb3=addr;
+	if(d[addr]==0x79 && d[addr+1]==0x00 && d[addr+2]==0x79 && d[addr+3]==0x00)
+          kd=addr;
+        else if(d[addr]==0x73 && d[addr+1]==0x25 && d[addr+2]==0xFA)
+          cb1=addr;
+        else if(d[addr]==0x64 && (d[addr+1]&0xB0)==0xB0 && d[addr+2]==0x24)
+          cb2=addr;
+        else if((d[addr]&0x60)==0x60 && (d[addr+1]&0xB0)==0xB0 && (d[addr+2]&0x20)==0x20)
+          cb3=addr;
         /*else if((d[addr]&0xF0)==0x60 && (d[addr+1]&0xF0)==0xB0) {
           int vajw = (int)(((~(d[addr]&0x0F))<<4)|(d[addr+1]&0x0F));
           unsigned char hits=0;
@@ -438,7 +439,10 @@ bool TpsAu::processAU( const cOpenTVModule *mod )
     fprintf(stderr,"TpsAu : couldn't locate all pointers in data section\n");
     return false;
     }
-  RegisterAlgo3(d,cb1,cb2,cb3,datahdr->dlen);
+  unsigned int end=(kd>cb1 && kd>cb2 && kd>cb3) ? kd : datahdr->dlen;
+  unsigned int off=min(cb1,min(cb2,cb3))-2;
+  RegisterAlgo3(d+off,cb1-off,cb2-off,cb3-off,end-off);
+
 
   const unsigned char *data=&d[kd];
   int seclen, numkeys;

@@ -1140,10 +1140,7 @@ bool GboxClient::processECM( unsigned char *ECM, int len, unsigned char *cw, Ecm
 #define CMD_OK_DESCRAMBLING 0x01
 // CA application should start descrambling the service in this CAPMT object, as soon as the list of CAPMT objects is complete
 
-int hackMakeConnect( int fd, const sockaddr* add, int size )
-{
-	return connect( fd, add, size);
-}
+
 
 CCcamClient::CCcamClient( QString, QString, QString pwd, int p_ort, QString ckey, QString caid, QString prov ) :  CardClient( "127.0.0.1", "ccam_indirect", "ccam_indirect", 9000, "00", "0", "0" )
 {
@@ -1153,10 +1150,14 @@ CCcamClient::CCcamClient( QString, QString, QString pwd, int p_ort, QString ckey
 }
 
 
+
 CCcamClient::~CCcamClient()
 {
 	stopPortListener();
+	if ( cwccam_fd!=-1 )
+		close( cwccam_fd );
 }
+
 
 
 bool CCcamClient::haveShare( Ecm *e )
@@ -1192,6 +1193,7 @@ bool CCcamClient::haveShare( Ecm *e )
 }
 
 
+
 bool CCcamClient::login()
 {
 	int rc;
@@ -1209,11 +1211,12 @@ bool CCcamClient::login()
 	bzero(&serv_addr_un, sizeof(serv_addr_un));
 	serv_addr_un.sun_family = AF_LOCAL;
 	strcpy(serv_addr_un.sun_path, camdsock);
-	res=hackMakeConnect(ccam_fd, (const sockaddr*)&serv_addr_un, sizeof(serv_addr_un));
+	res=::connect(ccam_fd, (const sockaddr*)&serv_addr_un, sizeof(serv_addr_un));
 	if (res !=0) {
 		fprintf( stderr, "CCcamClient: Couldnt open camd.socket..... errno = %d\n",errno);
 		close(ccam_fd);
 		ccam_fd = -1;
+		return false;
 	}
 	fprintf( stderr, "CCcamClient: Opened camd.socket..... ccamd_fd  = %d\n",ccam_fd );
 	if (cwccam_fd!=-1)
@@ -1242,6 +1245,7 @@ bool CCcamClient::login()
 }
 
 
+
 bool CCcamClient::processECM( unsigned char *ECM, int len, unsigned char *cw, Ecm *e, bool &hack )
 {
 	if ( !haveShare( e ) )
@@ -1251,8 +1255,6 @@ bool CCcamClient::processECM( unsigned char *ECM, int len, unsigned char *cw, Ec
 
 	unsigned char capmt[4096];
 	fprintf( stderr, "CCcamClient: Processing ECM....\n" );
-	const int caid=e->system;
-	const int pid=e->pid;
 	int pos;
 
 	memcpy(capmt,"\x9f\x80\x32\x82\x00\x00", 6);
@@ -1287,18 +1289,17 @@ bool CCcamClient::processECM( unsigned char *ECM, int len, unsigned char *cw, Ec
 	if ( !login() )
 		return false;
 	fprintf( stderr, "CCcamClient: sending capmts\n");
-	memcpy(sacapmt,capmt,4096);
-	Writecapmt();
+	if ( !Writecapmt( capmt ) )
+		return false;
 	startPortListener();
 	int u=0;
-	while ( (newcw==0) && (u++<100) )
+	while ( (newcw==0) && (u++<50) )
 		usleep(100000);			 // give the card a chance to decode it...
 	stopPortListener();
+	close( ccam_fd );
+	ccam_fd = -1;
 	if ( newcw==0 ) {
 		fprintf( stderr, "CCcamClient: FAILED ECM !!!!!!!!!!!!!!!!!!\n" );
-		sacapmt[9]=pmtversion;		 //reserved - version - current/next
-		pmtversion++;
-		pmtversion%=32;
 		return false;
 	}
 	memcpy( cw,savedcw,16 );
@@ -1308,33 +1309,27 @@ bool CCcamClient::processECM( unsigned char *ECM, int len, unsigned char *cw, Ec
 }
 
 
-void CCcamClient::Writecapmt()
+
+bool CCcamClient::Writecapmt( unsigned char *pmt )
 {
 	int len;
 	int list_management ;
 	list_management = LIST_ONLY;
-	sacapmt[6] = list_management;
-	len = sacapmt[4] << 8;
-	len |= sacapmt[5];
+	pmt[6] = list_management;
+	len = pmt[4] << 8;
+	len |= pmt[5];
 	len += 6;
-	int retry = 1;
-	for ( int i=0; i<2; ++i ) {
-		fprintf( stderr, "CCcamClient: Writing capmt  ==============================\n" );
-		if (ccam_fd==-1)
-			login();
-		if (ccam_fd==-1)
-			return ;
-
-		int r = write( ccam_fd, &sacapmt[0],len );
-		if (r != len) {
-			fprintf( stderr, "CCcamClient: CCcam probably has crashed or been killed...\n");
-			close(ccam_fd);
-			ccam_fd=-1;
-		}
-		else
-			break;
+	fprintf( stderr, "CCcamClient: Writing capmt  ==============================\n" );
+	int r = write( ccam_fd, pmt,len );
+	if (r != len) {
+		fprintf( stderr, "CCcamClient: CCcam probably has crashed or been killed...\n");
+		close(ccam_fd);
+		ccam_fd=-1;
+		return false;
 	}
+	return true;
 }
+
 
 
 void CCcamClient::startPortListener()
@@ -1345,11 +1340,13 @@ void CCcamClient::startPortListener()
 }
 
 
+
 void CCcamClient::stopPortListener()
 {
 	isRunning = false;
 	wait();
 }
+
 
 
 void CCcamClient::run()
@@ -1364,26 +1361,14 @@ void CCcamClient::run()
 	pfd[0].events = POLLIN;
 
 	while ( isRunning ) {
-		//fprintf(stderr, "CCcamClient: -----------------RUN---------------\n");
+		n=0;
 		if ( poll( pfd, 1, 100 ) ) {
 			fprintf(stderr,"CCcamClient: reading 127.0.0.1:9000\n");
 			n = ::recvfrom(cwccam_fd, cw, 18, 0, (struct sockaddr *) &cliAddr, &cliLen);
 		}
-		//else
-		//	fprintf(stderr,"CCcamClient: Can't read 127.0.0.1:9000\n");
 		if ( n==18 ) {
-			//fprintf( stderr, "CCcamClient: Got: %02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx  %02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx\n",
-				//cw[2], cw[3], cw[4], cw[5], cw[6], cw[7], 	cw[8], cw[9], cw[10], cw[11],
-				//cw[12], cw[13], cw[14], cw[15], cw[16], cw[17]);
-
-			if (newcw==1) {
-				close(ccam_fd);
-				ccam_fd=-1;
-			}
 			memcpy( savedcw, cw+2, 16 );
 			newcw =1;
-			//fprintf( stderr, "CCcamClient: SAVING KEYS FROM CCCAM !!!!!!!!!!!\n" );
 		}
 	}
-	//fprintf(stderr, "CCcamClient: -----------------RUN-STOP---------------\n");
 }

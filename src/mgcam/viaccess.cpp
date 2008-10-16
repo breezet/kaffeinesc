@@ -150,19 +150,19 @@ void cTPS::TpsDecrypt(unsigned char *data, short mode, unsigned char *key)
 		return;
 	}
 	else if ( mode==1 ) {
-		//fprintf(stderr, "TPS : doing AES\n");
+		fprintf(stderr, "TPS : doing AES\n");
 		cAES aes;
 		aes.SetKey( key );
 		aes.Decrypt( data, 16 );
 	}
 	else if ( mode==2 ) {
-		//fprintf(stderr, "TPS : doing RC6\n");
+		fprintf(stderr, "TPS : doing RC6\n");
 		cRC6 rc6;
 		rc6.SetKey( key );
 		rc6.Decrypt( data );
 	}
 	else if ( mode==3 ) {
-		//fprintf(stderr, "TPS : doing Algo3\n");
+		fprintf(stderr, "TPS : doing Algo3\n");
 		if ( !mem && !loadAlgo3() )
 			return;
 		if ( !DecryptAlgo3( data, key ) )
@@ -314,6 +314,7 @@ bool cViaccess::Decrypt(const unsigned char *work_key,  unsigned char *data, int
 	if ( DF ) {
 		//fprintf(stderr,"TPS : naes=%d\n",*naes);
 		stepbitmap=loadTpsAu(&k,naes);
+		fprintf( stderr, "NAES = %d, stepbitmap = %d, k.step[0]=%d, k.step[1]=%d, k.step[2]=%d\n", *naes, stepbitmap, k.step[0], k.step[1], k.step[2] );
 		if ( (stepbitmap&4)&&(tps) )
                 	doTPS=1;
 		if ( !(stepbitmap&4) )

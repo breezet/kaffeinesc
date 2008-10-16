@@ -549,6 +549,11 @@ void DVBscam::run()
 								ce->csHost = currentCC->getHost();
 								ce->csPort = currentCC->getPort();
 								ce->csCAID = currentCC->getCaId();
+								if ( e->descLength ) {
+									ce->descLength = e->descLength;
+									ce->descriptor = new unsigned char[e->descLength];
+									memcpy( ce->descriptor, e->descriptor, e->descLength );
+								}
 								cEcms.append( ce );
 								parity = sbuf[0];
 								stop = true;
@@ -1460,7 +1465,7 @@ loop:
 	}
 
 	if ( (source[0]==0x90 || source[0]==0x40) && source[1]==0x03 ){
-		bool tps=(source[0] == 0x40)?true:false;
+		bool tps=true;//(source[0] == 0x40)?true:false;
 		keynr=source[4] & 0x0f;
 		source+=5;
 		length-=5;
@@ -1580,8 +1585,10 @@ bool DVBscam::getCachedEcms()
 {
 	QString s, c;
 	char host[128];
-	int tsid, sid, pid, id, chid, system, caid, port;
+	char desc[500];
+	int tsid, sid, pid, id, chid, system, caid, port, desclen;
 	Ecm *e;
+	int i;
 
 	s = QDir::homeDirPath()+"/.kaffeine/cached.ecm";
 	QFile f( s );
@@ -1594,8 +1601,11 @@ bool DVBscam::getCachedEcms()
 		s = t.readLine();
 		memset( host, 0, 128 );
 		if ( !s.startsWith("#") ) {
-			if ( sscanf( s.latin1(), "%d %d %d %d %d %d %s %d %d", &tsid, &sid, &system, &id, &pid, &chid, host, &port, &caid )!=9 )
-				continue;
+			desclen = 0;
+			if ( sscanf( s.latin1(), "%d %d %d %d %d %d %s %d %d %d %s", &tsid, &sid, &system, &id, &pid, &chid, host, &port, &caid, &desclen, desc )!=11 ) {
+				if ( sscanf( s.latin1(), "%d %d %d %d %d %d %s %d %d", &tsid, &sid, &system, &id, &pid, &chid, host, &port, &caid )!=9 )
+					continue;
+			}
 			e = new Ecm();
 			e->system = system;
 			e->id = id;
@@ -1607,6 +1617,15 @@ bool DVBscam::getCachedEcms()
 			e->csHost = c;
 			e->csCAID = caid;
 			e->csPort = port;
+			if ( desclen ) {
+				e->descLength = desclen;
+				e->descriptor = new unsigned char[desclen];
+				c = desc;
+				for ( i=0; i<desclen; ++i ) {
+					e->descriptor[i] = c.left(2).toInt(0,16);
+					c.remove( 0, 2 );
+				}
+			}
 			cEcms.append( e );
 		}
 	}
@@ -1621,7 +1640,7 @@ void DVBscam::saveCachedEcms()
 {
 	QString s;
 	Ecm *e;
-	int i;
+	int i, j;
 
 	s = QDir::homeDirPath()+"/.kaffeine/cached.ecm";
 	QFile f( s );
@@ -1651,6 +1670,14 @@ void DVBscam::saveCachedEcms()
 		t<< s.setNum( e->csPort );
 		t<< " ";
 		t<< s.setNum( e->csCAID );
+		if ( e->csHost=="127.0.0.1" && e->csPort==9000 && e->descriptor ) {
+			t<< " ";
+			t<< s.setNum( e->descLength );
+			t<< " ";
+			for ( j=0; j<e->descLength; ++j ) {
+				t<< QString().sprintf( "%02X", e->descriptor[j] );
+			}
+		}
 		t<< "\n";
 	}
 

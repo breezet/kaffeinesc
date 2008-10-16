@@ -78,7 +78,7 @@ bool CatParser::parseCAT()
 				if ( !e ) {
 					switch ( system&0xFFFFFF00 ) {
 						case VIACCESS_CA_SYSTEM:
-						case NAGRA_CA_SYSTEM:
+						//case NAGRA_CA_SYSTEM:
 						case BETA_CA_SYSTEM:
 						case IRDETO_CA_SYSTEM:
 							e = new Emm( system, pid, adapter, tuner );

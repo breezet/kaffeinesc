@@ -238,12 +238,11 @@ protected:
 private:
 	void startPortListener();
 	void stopPortListener();
-	void Writecapmt();
+	bool Writecapmt( unsigned char *pmt );
 	bool login();
 	bool haveShare( Ecm *e );
 
 	int pmtversion;
-	unsigned char sacapmt[4096];
 	unsigned char savedcw[16];
 	int newcw;
 	int ccam_fd;
