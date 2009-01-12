@@ -3,6 +3,8 @@
 # Copy this file in $HOME/.kaffeine/
 # To not use this feature remove this file from $HOME/.kaffeine/
 #
+# use * as wildcard ie:  1810		 *
+#
 0100		80
 0100		81
 0100		6c

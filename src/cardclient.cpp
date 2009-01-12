@@ -1180,7 +1180,7 @@ bool CCcamClient::haveShare( Ecm *e )
 			continue;
 		c = caid;
 		p = provid;
-		if ( (e->system==c.toInt(0,16)) && (e->id==p.toInt(0,16)) ) {
+		if ( (e->system==c.toInt(0,16)) && (p=="*" || (e->id==p.toInt(0,16))) ) {
 			ret = true;
 			break;
 		}
